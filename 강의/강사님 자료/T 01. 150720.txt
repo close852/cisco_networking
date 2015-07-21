@@ -1,0 +1,82 @@
+                                                  ### Network
+
+-네트워크는 크기나 용도에 따라서 LAN과 WAN으로 구성이 가능하다.
+
+
+                                  ## LAN  (Local Area Network)
+
+-통신 주체인 자신이 포함된 동일 네트워크 구간을 의미하며 비교적 작은 범위로 구성한다.
+-특징		: 네트워크 구성시 비용이 증가하지만 통신 및 유지/보수 비용이 감소한다.
+-연결 장비	: NIC (랜카드) , Switch , T/P Cable
+-통신 Protocol	: Ethernet  (IEEE에서 지정한 LAN구간 표준 Protocol)
+  .Ethernet	: 10 Mbps
+  .FastEthernet	: 100 Mbps
+  .GigabitEthernet	: 1000 Mbps
+-통신 주소	: Mac-address (16진수 48bit , HH-HH-HH-HH-HH-HH)
+
+
+
+
+                                  ## WAN  (Wide Area Network)
+
+-통신 주체인 자신이 포함되지 않은 외부 네트워크 구간을 의미하며 비교적 큰 범위로 구성한다.
+  [분리된 LAN과 LAN을 연결하는 네트워크]
+-특징		: 일반적으로 ISP로부터 임대회선을 사용하기때문에 구축 비용이 감소하지만
+                            통신 및 유지/보수 비용이 증가한다.
+-연결 장비	: Router
+-통신 Protocol	: IP (Ineternet Protocol)
+-통신 주소	: IP address  (10진수 32bit , A.B.C.D)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
