@@ -228,7 +228,18 @@ PC
  - DNS Server IP : 168.126.63.1
  - Web Server IP : 200.20.2.2
 
-	(192.168.0.1)
+(요청)
+	Ethernet		IP		     UDP		DNS
+   SA: D0-27-88-42-BE-96   SA:192.168.0.98	SA:Random(49474)    www.naver.com
+   DA: 00-08-9f-56-59-18   DA:168.126.63.1	DA:53		
+
+(응답)
+	Ethernet		IP		     UDP		DNS
+   SA: 00-08-9f-56-59-18   SA:168.126.63.1	SA:53	  	    www.naver.com
+   DA: D0-27-88-42-BE-96   DA:192.168.0.98	DA:Random(49474)   125.209.222.142 
+
+			     DNS(168.126.63.1)
+	(192.168.0.1)	       |
 	Router-------------Internet---------------Webserver (143.212.2.1)
 	  |
 	  |
