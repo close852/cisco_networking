@@ -79,9 +79,12 @@ Secure CRT,Putty, 하이퍼 터미널	: 접속 프로그램
 
 
 
-
+(먼저, winpcap이 필요하다.)
+※주의※ tmp 폴더에 파일 삭제해야함
 1 Dynamips Server 실행
 2. ccna 실행
+
+start R1 R2 R3
 
 list
 idlepc get R1
@@ -92,6 +95,28 @@ idlepc save R2
 
 idlepc get R3
 idlepc save R3
+
+-----------------------------------------------
+SecureCRT 5.0 설치
+3번째 아이콘 클릭
+[마법사는 안쓰는 걸로]
+New Folder
+  ㄴ New Session 
+	:Telnet R1 2001 (127.0.0.1)
+	 Telnet R2 2002 (127.0.0.1)
+	 Telnet R3 2003 (127.0.0.1)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
