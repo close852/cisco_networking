@@ -15,6 +15,185 @@ line v 0 4
 password cisco
 exit
 
+------------------------------------------------------------------------
+sh ip route
+default int s 1/0
+no int lo 172
+
+telnet 접속자 지우는 것.
+clear line 67
+
+
+라우팅 프로토콜
+------------------------------------
+static 	남의 이름 물어보는 것
+dynamic	자기소개
+	.IGP : CCNA에서 이것만 함.
+	.EGP
+
+
+Routing Protocol
+	- Static
+
+	- Dynamic
+		.distance vector : Rip(자동요약:classful = 서브넷 마스크 무시), 
+				   Ripv2, EIGRP(자동/수동 Default=자동 [자동요약을 끄자! no auto summary])
+					  EIGRP => advance distance vector
+		.link-state	 : OSPF,IS-IS(수동요약만 지원)
+=======================================================================
+
+			##Routing Protocol 
+
+		#Static
+		=> 소규모 네트워크 유동성이 없는 네트워크, 보안,장비 사양이 떨어질 때
+	.남의 이름 물어보기
+	내가 모르는 네트워크를 관리자가 일일이 설정.
+	장점 : 장비와 네트워크에게 좋다.
+		.보안성, 신뢰성, 예측가능성이 좋다
+		.경로계산을 위한 CPU 소모율이 거의 없다.
+		.update를 위한 대역폭 소비량이 거의 없다.\
+	단점 : 관리자에게 좋지 않다.
+		.확장성이 떨어진다
+		.변화에 적용하기 어렵다
+		.설정 유지가 어렵다
+	
+	# static 설정 
+ ip route [내가 모르는 네트워크 네임] [netmask] [next hop'ip] *hop="라우터"
+
+ ip route 172.16.3.0 255.255.255.0 13.13.12.2
+ ip route 13.13.20.0 255.255.255.0 13.13.12.2
+ ip route 13.13.23.0 255.255.255.0 13.13.12.2
+ ip route 13.13.30.0 255.255.255.0 13.13.12.2
+
+routing 
+
+router 가 목적지 ip 를 보고 routing table 을 참조해서 발신 interface 로 보내준다
+
+경로 검색 => 경로 선출 => 경로 유지 
+
+경로 검색,경로 선출,경로 유지를 관리자가 일일이 해주는건 static routing protocol
+경로 검색,경로 선출,경로 유지를 router내에서 routing protocol 이 해주는 건  dynamic 
+
+경로 선출
+
+1.롱기스트 매치룰 : 목적지 ip에 가장 길게 일치가 되는 경로가 선출
+
+목적지 ip : 172.16.1.1
+
+172.16.1.0 /24   경로 선출
+172.16.0.0 /16
+
+
+
+##옵션
+en
+conf t
+no ip domain-lo
+line c 0 
+logging sy
+exec-t 0 0
+
+##비밀번호 설정
+
+en 
+conf t
+enable pass ciscofat
+enable secret cisco
+line c 0
+password cisco
+login
+line a 0
+password cisco
+login
+line v 0 4
+password cisco
+login
+
+
+##
+
+R1 
+int f 0/0
+ip add 13.13.10.1 255.255.255.0
+no shut
+
+int lo 172
+ip add 172.16.1.1 255.255.255.0
+
+int s 1/0
+ip add 13.13.12.1 255.255.255.0
+no shut
+
+
+R2 
+int s 1/1
+ip add 13.13.12.2 255.255.255.0
+no shut
+
+int f 0/0
+ip add 13.13.20.1 255.255.255.0
+no shut
+
+int s 1/0 
+ip add 13.13.23.2 255.255.255.0
+no shut
+
+R3
+int lo 172
+ip add 172.16.3.1 255.255.255.0
+
+int s 1/1
+ip add 13.13.23.3 255.255.255.0
+no shut
+
+int f 0/0
+ip add 13.13.30.1 255.255.255.0
+
+=======================================
+R1
+ip route 13.13.20.0 255.255.255.0 13.13.12.2
+ip route 13.13.23.0 255.255.255.0 13.13.12.2
+ip route 13.13.30.0 255.255.255.0 13.13.12.2
+ip route 172.16.3.0 255.255.255.0 13.13.12.2
+
+R2
+ip route 172.16.1.0 255.255.255.0 13.13.12.1
+ip route 13.13.10.0 255.255.255.0 13.13.12.1
+ip route 13.13.30.0 255.255.255.0 13.13.23.3
+ip route 172.16.3.0 255.255.255.0 13.13.23.3
+
+R3
+ip route 172.16.1.0 255.255.255.0 13.13.23.2
+ip route 13.13.10.0 255.255.255.0 13.13.23.2
+ip route 13.13.12.0 255.255.255.0 13.13.23.2
+ip route 13.13.20.0 255.255.255.0 13.13.23.2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
