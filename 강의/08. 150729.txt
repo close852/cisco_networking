@@ -1,0 +1,26 @@
+en
+conf t
+enable secret cisco
+enable password cisco
+no ip domain-lo
+line c 0
+logging sy
+exec-t 0 0
+password cisco
+exit
+line a 0 
+password cisco
+exit
+line v 0 4
+password cisco
+exit
+
+
+
+
+
+
+
+
+
+
