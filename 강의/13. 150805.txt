@@ -95,6 +95,7 @@ do debug eigrp packet update ack query reply
 
 net 10.10.0~3.0 이거는 그냥 설정해준거임. 요약은 안된거임.
 
+
 1. sh ip eigrp nei
 문제발생
  - sh ip route [interface 확인] <잘못입력했는지>
@@ -111,7 +112,24 @@ exec-t 0 0
 logging sy
 exit
 
+line c 0 
+password cisco
+login
+
+line a 0
+password cisco
+login
+
+line v 0 4
+password cisco
+login
+
+enable pass cisc
+enable secret cisco
 
 
-
-
+Bandwidth
+Delay
+Reliable
+load
+MTU
