@@ -1,0 +1,327 @@
+OSPF (Open Shortest Path First)
+
+Link-state 에 속해있는 SPF 의 알고리즘을 사용하는 
+대표적인 개방형 routing protocol
+
+ Link-state 
+
+1.link 변화시 인접성을 맺은 모든 router 에게 변화된 내용만 업뎃
+
+CPU 소모율이 적다
+대역폭 소비량이 적다 (2계층구조:하나의 AS 안에 여러 area 로 구분)
+구조가 복잡(인접성)
+확장성이 좋다
+변화에 적응이 빠르다 
+
+2.classless routing protocol
+
+VLSM,CIDR O
+수동요약만 지원
+
+3.multicast update
+
+ospf   224.0.0.5~6
+
+참고
+ripv2   224.0.0.9
+eigrp   224.0.0.10
+
+OSPF (Open Shortest Path First) 
+
+1.version 2  ipv6 : version 3
+2.AD 110
+3.classless routing protocol
+4.VLSM,CIDR O
+5.수동요약만 지원
+6.multicast update 224.0.0.5~6
+7.개방형
+8.균등 로드분산 (기본 4개 ~ 최대 16개)
+9.metric =  cost  =  10^8/bw =  100M/BW   , 10^8=100M
+
+
+   10M = 10^8/10^7  = 100M/10M  = 10
+  100M = 10^8/10^8  = 100M/100M  = 1  경로 선출
+
+  100M = 10^8/10^8  = 100M/100M  = 1
+ 1000M = 10^8/10^9  = 100M/1000M = 1  불필요한 균등 로드 분산
+
+불필요한 균등 로드분산을 해결하려면 auto-cost reference-bandwidth 
+명령어를 사용한다
+
+-router)#auto-cost reference-bandwidth 1000
+
+10^8/bw =  100M/BW 를 10^9/bw =  1000M/BW 로 변환
+
+  100M = 10^9/10^8  = 1000M/100M  = 10
+ 1000M = 10^9/10^9  = 1000M/1000M = 1    경로 선출
+
+10.2계층구조
+-하나의 AS 안에 여러 Area 로 구분
+
+11.인접성
+
+Hello  인접성을 맺고 유지(인접성의 조건) 유지 시간 4배차이
+DBD    전체적인 정보 교환 
+LSR    새로운 정보 요청 
+LSU    LSR 에 대한 응답
+LSA    승인
+
+Hello
+
+Router-id
+priority = 1 (0~255) 0이면 DR,BDR 하지 않겠다
+DR,BDR 주소
+neighbor's list
+subnetmask
+
+area-id 
+인증암호  무인증:0  평문인증:1  MD5인증:2
+hello,dead 주기  4배차이
+stub area flag :stub 으로 지정된 area 안에 모든 router 는 stub 이라고 설정
+
+MTU  전송 최대 크기 유닛 
+
+
+
+router-id  (eigrp,ospf,BGPv4)  ipv4 주소 형식
+router 를 구분하는 식별자
+
+router-id 선출기준
+
+1.설정
+
+router ospf 1
+router-id 1.1.1.1
+
+2.loopback interface 의 ip 중에서 숫자가 가장 큰 ip 가 선출 
+3.물리적인 interface 의 ip 중에서 숫자가 가장 큰 ip 가 선출
+
++선출이 되고 인접성을 맺은 후에는 더 좋은 조건의 내용이 와도 변경되지 않는다
+ 단 재인접성(reload or clear ip ospf process)을 맺게되면 선출 기준에 
+ 따라서 다시 선출이 된다
+ 
+DR,BDR
+
+1.priority = 1(0~255) 0이면 DR,BDR X
+2.router-id   =>숫자가 큰 
+
++ 선출이 되면 더 좋은 조건의 내용이 와도 변경되지 않는다
+ 단 재인접성(reload or clear ip ospf process)을 맺게되면 선출 기준에 
+ 따라서 다시 선출이 된다
+
+
+
+12.3개의 table
+
+neighbor table  네이버에 관한 정보    sh ip ospf nei
+database table  네이버에게 받은 정보  sh ip ospf data
+routing  table  최적의 경로 등록      sh ip route
+
+
+
+13.network type 
+
+                       Hello     Dead   DR,BDR 선출유무  네이버 
+point-to-point          10        40          X         자동
+broadcast               10        40          O         자동
+point-to-multipoint     30       120          X         자동
+nonbroadcast            30       120          O         수동
+
+
+14.LSA 광고 타입
+
+1 같은area  intra area  DR X    네트워크 정보  O     Router 
+2 같은area  intra area  DR O    DR 의 정보          Net
+3 다른area  inter area  ASBR X  네트워크 정보  OIA   Summary Net
+4 다른area  inter area  ASBR O   ASBR  정보        Summary ASB
+5 다른 AS   AS-external          외부 정보     OE1 :메트릭 증가
+                                            OE2 :메트릭 고정  기본
+
+15.설정
+
+172.16.1.0 /24
+13.13.10.0 /24
+13.13.12.0 /24
+
+router ospf 1
+net 172.16.1.0 0.0.0.255 area 0
+net 13.13.10.0 0.0.0.255 area 0
+net 13.13.12.0 0.0.0.255 area 0
+
+area 0 에 물리적으로 연결되어있지 않은 area 가 있다면 
+virtual-link 설정을 해줘야한다
+
+area 0 의 방향쪽 ABR 과 물리적으로 연결되어있지 않은 area 의 경계라우터에서 설정
+
+router ospf 1
+area x virtual-link [상대방 router-id]
+
+R2
+router ospf 1
+area 13 v 3.3.3.3
+
+R3
+router ospf 1
+area 13 v 2.2.2.2
+
+옵션설정
+
+MD5 인증설정
+
+
+interface 인증 
+인증할 구간에 연결된 interface 에서 설정
+
+R1
+int s 1/0
+ip ospf authentication message-digest
+ip ospf message-digest-key 13 md5 cisco
+
+R2
+int s 1/1
+ip ospf au m
+ip ospf me 13 m cisco
+
+area 인증
+
+인증할 area 안에 속해있는 모든 router 에서 인증 설정
+
+R1
+
+router ospf 1
+area 0 authentication message-digest
+
+int s 1/0
+ip ospf message-digest-key 13 md5 cisco
+
+R2
+
+router ospf 1
+area 0 au m
+area 13 v 3.3.3.3 me 13 m cisco
+
+int s 1/1
+ip ospf me 13 m cisco
+
+virtual-link 를 했을경우는 R3 도 논리적으로 area 0에 연결됨 그래서 R3도 인증설정
+
+R3
+
+router ospf 1
+area 0 au m
+area 13 v 2.2.2.2 me 13 m cisco
+
+
+정보확인
+
+기본설정
+
+sh ip route
+sh ip int bri
+sh run
+
+sh cdp nei det
+sh int s 1/0
+sh ip int s 1/0
+
+dynamic
+
+sh ip pro
+
+eigrp
+
+sh ip eigrp nei
+sh ip eigrp to
+sh ip eigrp tr
+
+ospf 
+
+sh ip ospf nei
+sh ip ospf data
+sh ip ospf int [s1/0]
+sh ip ospf vir
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
