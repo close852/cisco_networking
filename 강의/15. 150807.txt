@@ -312,7 +312,7 @@ LSA    승인
 
 DOWN STATE : 내 HELLO는 출발했는데, 상대의 HELLO는 도착하지 않은 상태
 INIT STATE : 상대의 HELLO는 도착했는데, 내 HELLO는 도착하지 않은 상태
-ATEMPT : non-broadcast의 DOWN 상태
+ATTEMPT : non-broadcast의 DOWN 상태
 TWO WAY STATE : 둘의 상태를 서로 교환한 것.
  DI / BDR 선출 two way상태에서 일어난다. [선출 시간이 걸릴수 있다.]
 
@@ -353,9 +353,10 @@ sh ip ospf database
 5 다른 AS   AS-external          외부 정보     OE1 :메트릭 증가
                                             OE2 :메트릭 고정  기본
 
-
-
-
+다른 네트워크 3
+asbr 4타입 
+abr이 알려준다.
+`
 
 ospf 경로유형
 
