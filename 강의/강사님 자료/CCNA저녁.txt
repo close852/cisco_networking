@@ -1126,7 +1126,7 @@ router-id 선출기준
 router eigrp 100
 eigrp router-id 1.1.1.1
 
-2.loopback interface 의 ip 중에서 숫자가 가장 큰 ip 가 선출 
+2.loopback interface 의 ip 중에서 숫자가 가장 큰 ip 가 선출
 3.물리적인 interface 의 ip 중에서 숫자가 가장 큰 ip 가 선출
 
 
