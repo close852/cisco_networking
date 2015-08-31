@@ -1,0 +1,1569 @@
+1.지각,결석 X
+2.예습,복습 O
+3.대답하기 
+
++필기 X
+
+CCNA
+CCNP
+CCIE
+
+cafe.naver.com/itwillcisco    공개  별명
+cafe.naver.com/itguild        공개  별명  수업용
+
+Network 
+
+연결
+
+-정보의 공유 , 커뮤니케이션 지원
+
+Network 종류
+
+LAN (Local Area Network)
+사용자가 포함된 비교적 좁은 지역의 소규모 네트워크 
+비용:초기 많다  유지 적다
+관리:내부 관리자
+속도: 100baseTx
+
+100 = 100M 
+base : 디지털
+broad : 아날로그
+
+Tx = TP
+
+STP : EMI(전자간섭) 을 받지 않는다
+UTP
+
+4TP = 8가닥
+
+1 화주
+2   주
+3 화초
+4   파
+5 화파
+6   초
+7 화빨
+8   빨
+
+UTP
+
+관리목적: rollover , rolled , 콘솔 ,관리자
+
+1 8
+2 7
+3 6
+4 5
+5 4
+6 3
+7 2
+8 1
+
+
+통신목적
+
+다른 장비 : 다이렉트 
+
+1 1
+2 2
+3 3
+4 4
+5 5
+6 6
+7 7
+8 8
+
+
+같은 장비 : 크로스오버
+
+1 3
+2 6
+3 1
+4 4
+5 5
+6 2
+7 7
+8 8
+
+장비 : Switch , Hub 
+
+WAN (Wide Area Network)
+LAN 과  LAN 들을 연결시켜주는 광역 네트워크  보통 ISP 업체를 이용
+비용: 꾸준히 든다 
+관리: ISP 업체
+장비: Router
+
+네트워크 구축의 핵심
+
+확장성
+이중화 
+ -백업
+ -로드분산
+
+데이타 전송 관계
+
+Server  Client가 요청을 하면 요청을 한 정보를 주는
+Client  Server에게 요청을 한 정보를 받는
+
+ipv4 의 데이타 전송 방식  
+
+unicast    1:1 
+broadcast  1:불특정다수
+multicast  1:특정다수
+
+OSI 7 계층
+호환성,T/S 용이
+
+상위계층 : DATA 생성 (일반적으로 OS 에 서 담당)
+
+7 어플리케이션  사람과의 커뮤니케이션 
+6 프레젠테이션  장비간의 커뮤니케이션 
+5 세션              원활한 흐름을 위해서 미리 약속한대로 연결을 맺고 종료  => PDU 
+
+하위계층 : DATA 전송 (주소:출발지(source)   목적지(destination))
+
+4 transport  [TCP or UDP][DATA]segement,port 16bit 0~65535(well-known:0~1023) S 랜덤 D 서비스 
+3 network   [IP][TCP or UDP][DATA]packet,ip 32bit 논리적인 주소:설정 및 변경이 가능 10진수 , Router
+2 data-link   [Ethernet][IP][TCP or UDP][DATA]frame,mac 48bit 앞에 24bit:OUI-24(회사번호)
+                  뒤에 24bit (고유번호) 물리적인 주소: 변경이 불가능  16진수 실제 host 주소 , Switch 
+1 피지컬     전기적인 신호로 변환   bit  2 진수  , hub  
+
+L4 encapsulation protocol 
+TCP  :  연결 지향 서비스
+UDP :  비 연결 지향 서비스 (Best Effort)
+
+L3  encapsulation protocol 
+
+IP,ICMP,IGMP,ARP
+
+L2  encapsulation protocol 
+LAN   :  Ethernet , FDDI , Token-ring
+WAN :  HDLC(cisco),PPP,Frame-relay
+
+L1   Hub       전기적인 신호를 증폭 같은 CD 안에 있다  CSMA/CD  ,  Half Duplex 
+L2   Switch    CD 을 나누어 준다     같은 BD 안에 있다                    full duplex
+L3   Router    물리적으로 BD 을 나누어 준다 
+
+Ethernet 의 데이타 전송 방식
+
+half duplex  : 반 양방향      무전기 
+full  duplex : 완전 양방향   전화기 
+
+ICMP 
+
+!!!!! 핑이 된다 (통신이 된다)
+
+R1#ping 13.13.12.2
+
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 13.13.12.2, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 20/30/48 ms
+
+
+..... 핑이 안된다(routing table 에 없을때,목적지 ip가 없을때,갔다가 못돌아옴)
+
+R1#ping 192.168.1.1
+
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 192.168.1.1, timeout is 2 seconds:
+.....
+Success rate is 0 percent (0/5)
+
+UUUUU 핑이 안된다(출발은 했으나 목적지에 도달 못함)
+
+R1#ping 192.168.1.1
+
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 192.168.1.1, timeout is 2 seconds:
+U.U.U
+Success rate is 0 percent (0/5)
+
+IPv4  32bit 
+
+8bit 씩 4개의 옥텟으로 구분
+
+8.8.8.8    128 64 32 16 8 4 2 1
+
+11111111.11111111.11111111.11111111
+
+255.255.255.255
+
+
+
+128 64 32 16 8 4 2 1
+
+172.16.1.1
+
+10101100.00010000.00000001.00000001
+
+172.16.1.1
+
+128 64 32 16 8 4 2 1
+
+10101010.01010101.11110000.00001111
+
+170.85.240.15
+
+11111000   =>  248
+11111100   =>  252
+ 
+subnetmask 
+ip 를 규정(Network-id 와 host-id 를 구분)
+
+172.16.1.254  /24   
+
+10101100.00010000.00000001.11111110
+11111111.11111111.11111111.00000000
+
+10101100.00010000.00000001.00000000
+
+172.16.1.0~255(1~254) /24
+
+IPv4  32bit 약 43억개
+
+unicast 
+
+A 0~127   (1~126)  /8
+B 128~191            /16
+C 192~223            /24 
+
+D 224~239  multicast 
+E 240~255  future use 
+
+classful
+subnetmask 를 무시 => default subnetmask 사용
+
+classless
+subnetmask 를 인정
+
+공인 ip 
+공중 네트워크망을 사용할수 있는 ip 즉 internet 을 사용할수 있는 ip  ISP 업체한테 임대해서 사용
+
+사설ip 
+공중 네트워크망을 사용할수 없는 ip 즉 internet 을 사용할수 없는 ip
+사설 ip 로 지정된 ip 를 사용하기를 권장
+
+10.0.0.0  /8
+172.16.0.0 /12 = 172.16.0.0 /16 ~ 172.31.0.0 /16
+192.168.0.0 /16 
+
+subnetmask  ip 를 규정(Network-id 와 host-id 를 구분)
+subnet         subneting 된  네트워크 
+subneting     ip 의 낭비를 막기위해서 원본 네트워크를 잘라주는것
+
+172.168.100.0 /24  host = 27   2^x-2>=27  x=5
+
+           2^3=8 2^5-2=30
+172.168.100.000 00000
+255.255.255.111 00000    /27
+            000 0  ~31 (1~30)
+            001 32 ~63 (33~62)
+            010 64 ~95 (65~94)
+            011 96 ~127(97~126)
+            100 128~159(129~158) 
+            101 160~191(161~190)
+            110 192~223(193~222)
+            111 224~255(225~254)
+
+168.100.250.0  /24   host = 25     2^x-2>=25  x =5
+
+168.100.250.000 00000
+255.255.255.111 00000   /27
+            000 0  ~31 (1~30)
+            001 32 ~63 (33~62)
+            010 64 ~95 (65~94)
+            011 96 ~127(97~126)
+            100 128~159(129~158)
+            101 160~191(161~190)
+            110 192~223(193~222)
+            111 224~255(225~254)
+
+VLSM
+
+subneting 된것을 다시 subneting 해주는것
+
+host = 2  2^x-2>=2  x = 2 
+
+168.100.250.000 000 00
+255.255.255.111 111 00  /30
+            100 000 128~131(129.130)
+            100 001 132~135(133.134)
+            100 010 136~139(137.138)
+            100 011 140~143(141.142)
+            100 100 144~147(145.146)
+            100 101 148~151(149.150)
+            100 110 152~155(153.154)
+            100 111 156~159(157.158)
+  
+
+host = 2 2^x-2>=2   x = 2
+
+168.100.250.000 000 00
+255.255.255.111 111 00   /30
+            101 000 160~163(161.162)
+            101 001 164~167(165.166)
+            101 010 168~171(169.170)
+            101 011 172~175(173.174)
+            101 100 176~179(177.178)
+            101 101 180~183(181.182)
+            101 110 184~187(185.186)
+            101 111 188~191(189.190)
+요약
+routing table 의 크기를 줄여주기 위해서
+=> routing table 유지를 위한 CPU 소모율이 줄어든다
+=> update 를 위한 대역폭 소비량이 줄어든다
+
+자동요약
+classful 한 요약 
+
+172.16.8.0  /24 ~ 172.16.15.0 /24
+
+172.16.0.0  /16
+
+수동요약 
+classless 한 요약
+공통된 부분까지만 고정
+
+172.16.8.0  /24 ~ 172.16.15.0 /24
+
+172.16.00001000.0
+172.16.00001001.0
+172.16.00001010.0
+172.16.00001011.0
+172.16.00001100.0
+172.16.00001101.0
+172.16.00001110.0
+172.16.00001111.0
+
+172.16.8.0  /21
+
+172.16.249.0  /24 ~ 172.16.254.0 /24 
+
+172.16.11111001.0
+~~~~~~~~~~~~~~~~~
+172.16.11111110.0
+
+172.16.248.0   /21
+
+172.16.0.0 /16 ~ 172.31.0.0 /16
+
+172.00010000.0.0
+~~~~~~~~~~~~~~~~
+172.00011111.0.0
+
+172.16.0.0  /12
+
+
+172.16.8.0  /21  슈퍼넷팅
+192.16.8.0  /21   CIDR
+
+
+실습
+
+패킷트레이서   시뮬
+다이나밉스     애뮬
+장비
+
+원격 접속 포트
+telnet,ssh
+
+장비 접속 프로그램 
+
+Secure CRT,Putty,하이퍼 터미널
+
+다이나밉스 실행 방법
+
+1.tmp 폴더 안에 있는 내용 삭제 후  다이나밉스 서버 실행 
+=>wpcap 이 없어서 실행이 안된다라고 하면 유틸 폴더안에 
+  다이나밉스 11.0 폴더안에 winpcap 실행후 다시 다이나밉스 서버 실행
+2.CCNA 실행
+3.start R1 R2 R3  
+=> 제대로 실행이 안되거나 느리면 다 종료 하고 tmp 폴더안에 내용 삭제후에
+   1,2,3 실행
+
+4.Secure CRT 연동
+
+- 1,2,3 제대로 실행 했는지 확인 
+- 127.0.0.1 확인
+- port 번호 확인
+
+
+
+
+
+
+
+				### 20150727 6일차
+
+RAM  설정을 하면 자동적으로 저장이되고 장비는 RAM 있는 내용대로 동작을 한다
+     휘발성 메모리 : 재부팅을 하면 무조건 삭제가 된다
+
+
+NVRAM  명령어를 입력해야만 저장이 되고 삭제가 된다  재부팅으로 삭제되지 않는다
+       비 휘발성 메모리
+
+config-register 값
+
+load 하는 값      : 0x2102
+load 하지 않는 값 : 0x2142
+
+Router>en
+Router#정보확인,저장(copy run start)삭제(erase start)재부팅(reload)
+       ping test , telnet 및 ssh 접속, traceroute 등등
+
+정보확인
+show  : 정적 정보확인
+debug : 동적 정보확인
+
+Router>en
+Router#conf t
+Router(config)#전반적인 설정 및 상세 설정 모드로의 접근
+
+
+Router>en
+Router#conf t
+Router(config)#line c 0
+Router(config-line)#exit
+Router(config)#line c 0
+Router(config-line)#end  or Ctrl+z
+Router#
+
+
+정보 확인 
+
+sh ip route : routing table 정보 확인
+sh ip int bri  : 장비의 모든 interface 의 간략한 정보 확인
+
+  L1                      L2
+Status                Protocol
+administratively down down  :shutdown 상태=> no shut
+down                  down  :L1계층 문제(cable 확인 ,상대방이 shutdown상태)
+up                    down  :L2계층 문제(clock rate값확인,L2 캡슐화 protocol확인)
+up                    up    :L2계층까지 문제 없다
+
+sh run  : RAM 상에 설정된 전체적인 정보확인
+
+sh cdp nei [detail] :상대방 장비 정보[상세하게] 확인  L2 까지 up 이 되어있어야 함
+sh int [s1/0] : interface 의 전체적인 정보 확인
+
+sh start : NVRAM 에 저장된 정보 확인
+
+sh clock  : 장비 시간 확인
+sh controllers [s1/0] : interface 에 연결된 cable 정보 확인(cable type 확인)
+
+sh ver     : IOS version 정보 확인
+sh flash   : flash memory 정보 확인  => IOS upgrade  할때
+
+sh his : 입력했던 명령어 정보 확인
+
+
+				### 20150727 6일차 끝
+				### 20150728 7일차 시작
+
+
+RAM 을 NVRAM 에 저장하는 명령어 : copy run start , wr , wr me
+
+NVRAM 삭제 : erase start ,erase nvram:
+
+재부팅 : reload
+
+설정
+
+password 설정(옵션:장비접속에 대한 보안이 좋아진다)
+
+enable
+
+secret    :암호화  우선순위가 높음  : enable secret cisco
+password  : 평문   password 동일 X  : enable pass soldesk 
+
+Router>en
+Password:cisco 
+Router#
+
+line
+
+line c 0
+pass cisco
+login        login 유무에 따라서 password 입력 유무가 정해짐
+
+Router con0 is now available
+
+Press RETURN to get started.
+
+User Access Verification
+
+Password: 
+Router>
+
+line a 0
+pass cisco
+login        login 유무에 따라서 password 입력 유무가 정해짐
+
+line v 0 4
+pass cisco   password 유무에 따라서 접속 유무가 정해짐 
+login        login 유무에 따라서 password 입력 유무가 정해짐 
+
+R1#telnet 13.13.12.2
+Trying 13.13.12.2 ... Open
+
+User Access Verification
+
+Password: 
+R2>
+
+sh user : 장비에 접속한 사용자 정보 확인
+
+
+interface 설정(필수 : CCNA 의 기본설정)
+
+
+
+R1
+
+ho R1
+int lo 172
+ip add 172.16.1.1 255.255.255.0
+
+int f 0/0
+ip add 13.13.10.1 255.255.255.0
+no shut
+
+int s 1/0
+ip add 13.13.12.1 255.255.255.0
+no shut
+
+R2
+
+ho R2
+
+int f 0/0
+ip add 13.13.20.1 255.255.255.0
+no shut
+
+int s 1/0
+ip add 13.13.23.2 255.255.255.0
+no shut
+
+int s 1/1
+ip add 13.13.12.2 255.255.255.0
+no shut
+
+
+R3
+
+ho R3
+
+int lo 172
+ip add 172.16.3.1 255.255.255.0
+
+int f 0/0
+ip add 13.13.30.1 255.255.255.0
+no shut
+
+int s 1/1
+ip add 13.13.23.3 255.255.255.0
+no shut
+
+
+
+
+기타옵션
+
+no ip domain-lo  불필요한 DNS 요청 방지
+
+line c 0
+logging sy        줄정리
+exec-t 10 10      콘솔 종료 X
+
+
+en
+conf t
+no ip domain-lo
+line c 0
+logging sy
+exec-t 0 0
+exit
+
+				### 20150728 7일차 끝
+				### 20150729 8일차 시작
+
+
+static 
+내가 모르는 네트워크를 관리자가 일일이 설정
+
+장점
+
+보안성,신뢰성,예측가능성이 좋다
+경로 계산을 위한 CPU 소모율이 거의 없다
+update 를 위한 대역폭 소비량이 거의 없다
+
+단점
+
+확장성이 떨어진다
+변화에 적응이 느리다
+설정 유지가 어렵다
+
+static 을 사용하는 네트워크
+
+소규모 네트워크 , 유동적이지 않은 네트워크 , 보안성 , 장비 사양이 떨어질때
+
+
+
+
+
+				### 20150729 8일차 끝
+				### 20150730 9일차 시작
+
+
+
+설정
+
+ip route [내가 모르는 네트워크 네임][netmask][next hop'ip]
+
+R1
+
+ip route 13.13.20.0 255.255.255.0 13.13.12.2
+ip route 13.13.23.0 255.255.255.0 13.13.12.2
+ip route 13.13.30.0 255.255.255.0 13.13.12.2
+ip route 172.16.3.0 255.255.255.0 13.13.12.2
+
+R2
+
+ip route 172.16.1.0 255.255.255.0 13.13.12.1
+ip route 13.13.10.0 255.255.255.0 13.13.12.1
+ip route 172.16.3.0 255.255.255.0 13.13.23.3
+ip route 13.13.30.0 255.255.255.0 13.13.23.3
+
+
+R3
+
+ip route 172.16.1.0 255.255.255.0 13.13.23.2
+ip route 13.13.10.0 255.255.255.0 13.13.23.2
+ip route 13.13.12.0 255.255.255.0 13.13.23.2
+ip route 13.13.20.0 255.255.255.0 13.13.23.2
+
+defualt 경로
+routing table 경로들 중에서 가장 마지막에 참조 하는 경로
+
+default static 
+
+ip route 0.0.0.0 0.0.0.0 [next hop'ip]
+
+or 
+
+ip route 0.0.0.0 0.0.0.0 [자기 interface 네임]
+
+
+routing 
+
+router 가 목적지 ip 를 보고 routing table 을 참조해서 발신 interface 로 보내준다
+
+routing table 을 참조
+
+경로 검색 => 경로 선출 => 경로 유지 
+
+경로 검색,경로 선출,경로 유지를 관리자가 일일이 해주는건 static routing protocol
+경로 검색,경로 선출,경로 유지를 router내에서 routing protocol 이 해주는 건  dynamic 
+
+경로 선출
+
+1.롱기스트 매치룰 : 목적지 ip에 가장 길게 일치가 되는 경로가 선출
+
+목적지 ip : 172.16.1.1
+
+172.16.1.0 /24   경로 선출
+172.16.0.0 /16
+
+2.상황에 따라서
+
+-다수의 routing protocol 이 있을때는 AD(신뢰도)값이 가장 작은 경로가 선출
+
+목적지 ip : 172.16.1.1
+
+172.16.1.0 /24  AD 110 경로 선출 
+172.16.1.0 /24  AD 120
+
+-하나의 routing protocol 이 있을때는 metric(경로값)값이 가장 작은 경로가 선출 
+
+목적지 ip : 172.16.1.1
+
+172.16.1.0 /24  AD 110   M = 128 
+172.16.1.0 /24  AD 110   M = 64    경로 선출
+
+router  가 사용하는 switching 방식
+routint table 의 참조 여부
+-process switching : 매번 routing table 을 참조
+-fast switchint :처음에만 routing table 참조하면 캐시복제 그이후는 캐시참조
+-CEF :routing table 이 완성될때 캐시 복제 그이후는 캐시 참조
+
+routing protocol
+
+static routing protocol
+내가 모르는 네트워크를 관리자가 일일 설정한다
+
+dynamic routing protocol
+내 네트워크를 관리자가 설정해주면 알아서 동적으로 전파
+
+
+AS(Autonomous System)
+하나의 정책에 의해서 동작하는 네트워크
+
+IGP : AS 안에서 구동되는 routing protocol
+EGP : AS 와 AS 사이에서 구동되는 routing protocol
+
+distance vector
+
+주기적으로 인접한 router 에게만 routing table 전체를 update 한다
+
+-구조가 간단
+-CPU 소모율 많다
+-대역폭 소비량 많다
+-확장성이 떨어진다
+-변화에 적응이 느리다 
+-알고리즘상 루프가 발생한다(루프 방지법:split-horizon)
+
+split-horizon 
+수신한 정보를 수신한 interface 로 다시 전송하지 않는다
+
+ Rip
+1.개방형
+2.AD 120
+3.UDP = 520
+4.classful routing protocol
+5.VLSM,CIDR X
+6.자동요약만 지원 
+7.broadcast update
+8. update 30초 invalid time(수신대기시간)180초 holddown(삭제 대기)180초
+   flushed time(총삭제 시간) 240초
+9.균등 로드 분산(기본 4개 ~ 최대 16개)
+10.metric = hop count =router 경유수 (1~15) 16이면 장애발생으로 인식
+11.설정
+classful 하게 설정
+
+172.16.1.0 /24
+13.13.10.0 /24
+13.13.12.0 /24
+
+router rip
+net 172.16.0.0
+net 13.0.0.0
+
+ripv1                                                 ripv2
+classful routing protocol                      classless routing protocol
+VLSM,CIDR X                                      VLSM,CIDR O
+자동요약만 지원                                   자동,수동 요약 기본은 자동=>끄자
+broadcast update                                multicast update (224.0.0.9)
+
+triggered update X                  triggered update(WAN P2P에서만 지원)
+해시 함수를 이용한 MD5 인증 X  해시 함수를 이용한 MD5 인증 O
+
+Ripv2 설정
+
+classful 하게 설정
+
+172.16.1.0 /24
+13.13.10.0 /24
+13.13.12.0 /24
+
+router rip
+v 2
+net 172.16.0.0
+net 13.0.0.0
+no au
+
+
+
+
+
+				### 20150730 9일차 끝
+				### 20150803 10일차 시작
+
+
+
+
+Ripv2 의 옵션 설정
+
+triggered update(WAN P2P에서만 지원) 설정
+
+triggered update를 할 구간에 연결된 interface 에서 설정
+
+R1
+int s 1/0
+ip rip triggered 
+
+R2
+int s 1/1
+ip rip tr
+
+해시 함수를 이용한 MD5 인증 설정
+
+1.인증할 구간에 연결된 모든 router 에서 key chain 을 설정
+
+key chain AAA      key chain 이름은 달라도 상관없다
+key 13                 key 값은 서로 동일해야한다
+key-string cisco    key-string 값은 서로 동일해야 한다
+
+2.인증할 구간에 연결된 모든 interface 에서 key chain 을 적용
+
+R1
+int s 1/0
+ip rip authentication key-chain AAA
+ip rip authentication mode md5
+
+R2
+int s 1/1
+ip rip au k AAA
+ip rip au m m
+
+
+요약
+
+routing table 의 크기를 줄여주기 위해서
+=>routing table 유지를 위한 CPU 소모율이 줄어든다
+=>update 를 위한 대역폭 소비량이 줄어든다
+
+수동요약 설정 
+
+요약을 넘겨줄 interface 에서 설정
+
+R1
+int s 1/0
+ip summary-address rip 172.16.8.0 255.255.248.0
+
+ripv2 와 eigrp 는 수동 요약을 할때 Null  interface 가 생성 되어야 한다
+
+ripv2 는 자동생성 X => 수동생성 
+
+ip route 172.16.8.0 255.255.248.0 null 0
+
+eigrp 는 자동생성 O
+
+Null  interface 만들어 주는 이유는 루프 방지 
+
+clear ip route *    routing table 정리 , 재시작 
+sh ip protocol      dynamic routing protocol 의 기본 내용
+
+전체 옵션
+
+passive-interface
+(전체옵션:passive-interface로 지정된 interface 로는 routing 정보를 update 못함
+  단 수신은 한다)
+=> 불필요한 update traffic 의 낭비를 막아준다
+
+-router)#passive-interface lo 172
+-router)#passive-interface f0/0
+
+  eigrp 
+
+  link-state
+
+1.link 변화시 모든 router 에게 변화된 내용만 update 한다
+
+-CPU 소모율 적다
+-대역폭 소비량 적다 
+-구조가 복잡(인접성)
+-확장성이 좋다
+-변화에 적응이 빠르다
+
+2.classless routing protocol
+
+-VLSM,CIDR O
+-수동 요약만 지원
+
+3.multicast update
+
+ospf(224.0.0.5~6)
+
+참고
+
+ospf   224.0.0.5~6
+ripv2  224.0.0.9
+eigrp  224.0.0.10
+
+   eigrp 
+1.cisco 전용
+2.classless routing protocol
+3.VLSM,CIDR O
+4.자동,수동요약 기본은 자동 => 끄자
+5.multicast  update   224.0.0.10
+6.PDM(IP,IPX,Apple talk)
+7.AD 5(summary) 90(internal) 170(external)
+8.균등,비균등 로드분산 지원(기본 4개 ~ 최대 16개) 기본은 균등 로드분산만 지원
+  비균등 로드분산 하려면 variance 값을 조절  기본 1 ~ 128
+9.metric    K-value(K상수값) K1=1,K2=0,K3=1,K4=0,K5=0
+
+bandwidth    대역폭 
+delay          지연
+reliability  신뢰성
+load         과부하
+MTU          전송최대 크기 유닛
+
+BW , delay
+
+10^7/BW*256  +  delay/10*256   =  32bit 
+
+BW : 최소 BW 
+delay : delay 합
+
+10.인접성
+
+Hello   인접성을 맺고 유지(인접성의 조건:K-value,AS-number) 유지시간(hold) 3배
+Update  정보를 update 할때 사용
+Query   네트워크 장애가 생겼을 경우 사용
+Reply  Query 에 대한 응답
+Ack     수신 확인,승인
+
++인접성이 끊기는 경우
+
+1.hold 시간안에 Hello 수신 못하는 경우 인접성이 해지
+2.Update,Query,Reply 에 대한  Ack 를 수신하지 못하는 경우
+  =>16번 재전송 후에 인접성이 해지
+3.Query 에 대한 Reply 를 수신하지 못하는 경우
+  =>SIA(Stuck in Active) 상태로 3분이 지나면 인접성이 해지
+
+11.3개의 table 
+
+neighbor table 네이버에 관한 정보     sh ip eigrp nei
+topology table 네이버에게 받은 정보   sh ip eigrp to
+routing  table 최적의 경로가 등록     sh ip route
+
+FD = Metric        출발지 부터 목적지까지의 경로값
+AD = Source Metric 출발지 네이버 router 부터 목적지까지의 경로값 
+
+S와 FS 의 선출 기준
+
+1.S 는 FD 값이 가장 작은 경로가 선출
+2.FS 는 S 의 FD 값보다 작은  AD 값을 가진 경로들 중에서
+  가장 작은 FD 값을 가진 경로가 선출
+
+12.network type 
+                                Hello        Hold 
+point-to-point               5           15 
+broadcast                     5           15
+nonbroadcast              60          180
+
+13.설정
+
+
+classful 하게 설정
+
+172.16.1.0 /24
+13.13.10.0 /24
+13.13.12.0 /24
+
+router eigrp 100
+net 172.16.0.0
+net 13.0.0.0
+no au
+
+classless 하게 설정
+
+172.16.1.0 /24
+13.13.10.0 /24
+13.13.12.0 /24
+
+router eigrp 100
+net 172.16.1.0 0.0.0.255
+net 13.13.10.0 0.0.0.255
+net 13.13.12.0 0.0.0.255
+no au
+
+wildcard mask (eigrp,ospf,ACL)
+
+wildcard mask  와 subnetmask 의 공통점
+
+ip 를 규정
+
+wildcard mask  와 subnetmask 의 차이점
+
+1.표기법의 차이
+
+S  1  0
+W  0  1
+
+255.255.255.0 => 11111111.11111111.11111111.00000000
+                 00000000.00000000.00000000.11111111 =>  0.0.0.255
+
+255.255.255.255
+255.255.255.0
+  0.  0.  0.255
+
+255.255.255.255
+  0.  0.  0.255
+255.255.255.0
+
+2.bit 의 불연속 가능유무
+
+S 불가능
+W   가능
+
+192.168.0.0 /24 ~ 192.168.255.0 /24 중에서 사용할수있는 첫번째 ip 만 지정
+
+192.168.0.1 255.255.255.255
+192.168.1.1 255.255.255.255
+192.168.2.1 255.255.255.255
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+192.168.255.1 255.255.255.255
+
+192.168.0.1  0.0.255.0
+
+192.168.1.0  /24  짝수만 지정
+
+192.168.1.2 255.255.255.255
+192.168.1.4 255.255.255.255
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+192.168.1.254 255.255.255.255
+
+192.168.1.00000010
+192.168.1.00000100
+192.168.1.00000110
+~~~~~~~~~~~~~~~~~~
+192.168.1.11111110
+
+
+192.168.1.0   0.0.0.254   짝수만 지정
+
+192.168.1.00000001
+192.168.1.00000011
+192.168.1.00000101
+~~~~~~~~~~~~~~~~~~
+192.168.1.11111111
+
+192.168.1.1  0.0.0.254  홀수만 지정
+
+192.168.1.129 /24 , 192.168.1.131  /24  만 지정
+
+192.168.1.129 255.255.255.255
+192.168.1.131 255.255.255.255
+
+192.168.1.10000001
+192.168.1.10000011
+
+192.168.1.129  0.0.0.2
+
+
+classless 하게 설정
+
+172.16.1.0 /24
+13.13.10.0 /24
+13.13.12.0 /24
+
+router eigrp 100
+net 172.16.1.0 0.0.0.255
+net 13.13.10.0 0.0.0.255
+net 13.13.12.0 0.0.0.255
+no au
+
+
+				### 20150803 10일차 끝
+				### 20150803 12일차 시작
+
+
+
+
+
+
+
+
+
+
+옵션 설정
+
+해시 함수를 이용한 MD5 인증 설정
+
+1.인증할 구간에 연결된 모든 router 에서 key chain 을 설정
+
+key chain AAA      key chain 이름은 달라도 상관없다
+key 13                 key 값은 서로 동일해야한다
+key-string cisco    key-string 값은 서로 동일해야 한다
+
+2.인증할 구간에 연결된 모든 interface 에서 key chain 을 적용
+
+R1
+int s 1/0
+ip authentication key-chain eigrp 100 AAA
+ip authentication mode eigrp 100 md5
+
+R2
+int s 1/1
+ip authe k e 100 AAA
+ip authe m e 100 m
+
+요약
+
+routing table 의 크기를 줄여주기 위해서
+=>routing table 유지를 위한 CPU 소모율이 줄어든다
+=>update 를 위한 대역폭 소비량이 줄어든다
+
+수동요약 설정 
+
+요약을 넘겨줄 interface 에서 설정
+
+R1
+int s 1/0
+ip summary-address eigrp 100 172.16.8.0 255.255.248.0
+
+ripv2 와 eigrp 는 수동 요약을 할때 Null  interface 가 생성 되어야 한다
+
+ripv2 는 자동생성 X => 수동생성 
+
+ip route 172.16.8.0 255.255.248.0 null 0
+
+eigrp 는 자동생성 O
+
+Null  interface 만들어 주는 이유는 루프 방지 
+
+
+
+router-id  (eigrp,ospf,BGPv4)  ipv4 주소 형식
+
+router 를 구분하는 식별자
+
+router-id 선출기준
+
+1.설정
+
+router eigrp 100
+eigrp router-id 1.1.1.1
+
+2.loopback interface 의 ip 중에서 숫자가 가장 큰 ip 가 선출 
+3.물리적인 interface 의 ip 중에서 숫자가 가장 큰 ip 가 선출
+
+
+ OSPF(Open Shortest Path First)
+link-state 에 속해있는 SPF의 알고리즘을 사용하는 대표적인 개방형 routing protocol
+
+ link-state
+1.link 변화시 모든 router 에게 변화된 내용만 update
+
+-구조가 복잡(인접성)
+-CPU 소모율이 적다
+-대역폭 소비량이 적다 (2계층구조:하나의AS안에 여러 area 로 구분)
+-확장성이 좋다
+-변화에 적응이 빠르다
+
+2.classless routing protocol
+
+-VLSM,CIDR O
+-수동요약만 지원
+
+3.multicast update
+
+ospf  224.0.0.5~6
+
+  OSPF(Open Shortest Path First)
+
+1.version 2    ipv6:version 3
+2.AD 110
+3.개방형
+4.classless routing protocol
+5.VLSM,CIDR O
+6.수동요약만 지원
+7.multicast update 224.0.0.5~6
+8.균등 로드분산만 지원(기본4개 ~ 최대 16개)
+9.metric = cost = 10^8/bw= 100M/bw  ,10^8 = 100M   
+
+    10M  =  10^8/10^7  = 10
+   100M =  10^8/10^8   = 1    경로 선출
+
+   100M =  10^8/10^8   = 1
+  1000M = 10^8/10^9   = 1     불필요한 균등 로드 분산 
+
+불필요한 균등 로드 분산 을 해결하려면 auto-cost reference-bandwidth 명령어 사용
+
+-router)#auto-cost reference-bandwidth 1000
+
+10^8/bw => 10^9/bw 즉 1000M/bw 로 변경
+ 
+    100M =  10^9/10^8   = 10
+  1000M = 10^9/10^9   = 1     경로 선출
+
+10.2계층구조
+하나의 AS 안에 여러 area 로 구분
+
+11.인접성
+
+Hello  인접성을 맺고 유지(인접성의 조건) 유지 시간 4배차이
+DBD    전체적인 정보 교환 
+LSR    새로운 정보 요청 
+LSU    LSR 에 대한 응답
+LSA    승인
+
+
+Hello 
+
+Router-id
+priority = 1 (0~255) 0이면 DR,BDR 하지 않겠다
+DR,BDR 주소
+neighbor's list
+subnetmask
+
+area-id 
+인증암호  무인증:0  평문인증:1  MD5인증:2
+hello,dead 주기  4배차이
+stub area flag :stub 으로 지정된 area 안에 모든 router 는 stub 이라고 설정
+
+MTU  전송 최대 크기 유닛 
+
+router-id  (eigrp,ospf,BGPv4)  ipv4 주소 형식
+router 를 구분하는 식별자
+
+router-id 선출기준
+
+
+
+				### 20150803 12일차 끝
+
+
+1.설정
+
+router ospf 1
+router-id 1.1.1.1
+
+2.loopback interface 의 ip 중에서 숫자가 가장 큰 ip 가 선출 
+3.물리적인 interface 의 ip 중에서 숫자가 가장 큰 ip 가 선출
+
++선출이 되고 인접성을 맺은 후에는 더 좋은 조건의 내용이 와도 변경되지 않는다
+ 단 재인접성(reload or clear ip ospf process)을 맺게되면 선출 기준에 따라서
+ 다시 선출이 된다
+ 
+DR,BDR
+
+1.priority = 1(0~255) 0이면 DR,BDR X
+2.router-id   =>숫자가 큰 
+
++ 선출이 되면 더 좋은 조건의 내용이 와도 변경되지 않는다
+ 단 재인접성(reload or clear ip ospf process)을 맺게되면 선출 기준에 따라서
+ 다시 선출이 된다
+
+12.3개의 table
+
+neighbor table  네이버에 관한 정보    sh ip ospf nei
+database table  네이버에게 받은 정보  sh ip ospf data
+routing  table  최적의 경로 등록      sh ip route
+
+13.network type 
+
+                       Hello     Dead   DR,BDR 선출유무  네이버 
+point-to-point          10        40          X           자동
+broadcast               10        40          O           자동
+point-to-multipoint     30       120          X           자동
+nonbroadcast            30       120          O           수동
+
+14.LSA 광고 타입
+
+1 같은area  intra area  DR X    네트워크 정보  O     Router 
+2 같은area  intra area  DR O    DR 의 정보           Net
+3 다른area  inter area  ASBR X  네트워크 정보  OIA   Summary Net
+4 다른area  inter area  ASBR O   ASBR  정보          Summary ASB
+5 다른 AS   AS-external          외부 정보     OE1 :메트릭 증가
+                                               OE2 :메트릭 고정  기본
+
+15.설정
+
+classless 하게 설정
+
+172.16.1.0 /24
+13.13.10.0 /24
+13.13.12.0 /24
+
+router ospf 1
+net 172.16.1.0 0.0.0.255 area 0
+net 13.13.10.0 0.0.0.255 area 0
+net 13.13.12.0 0.0.0.255 area 0
+
+area 0 에 물리적으로 연결되어있지 않은 area 가 있다면 
+virtual-link 설정을 해줘야한다
+
+area 0 의 방향쪽 ABR 과 물리적으로 연결되어있지 않은 area 의 경계라우터에서 설정
+
+router ospf 1
+area x virtual-link [상대방 router-id]
+
+R2
+router ospf 1
+area 13 v 3.3.3.3
+
+R3
+router ospf 1
+area 13 v 2.2.2.2
+
+옵션 설정
+
+옵션설정
+
+MD5 인증설정
+
+interface 인증 
+인증할 구간에 연결된 interface 에서 설정
+
+R1
+int s 1/0
+ip ospf authentication message-digest
+ip ospf message-digest-key 13 md5 cisco
+
+R2
+int s 1/1
+ip ospf au m
+ip ospf me 13 md5 cisco
+
+area 인증 설정
+
+인증할 area 안에 속해 있는 모든 router 에서 설정
+
+R1
+
+router ospf 1
+area 0 authentication message-digest
+
+int s 1/0
+ip ospf message-digest-key 13 md5 cisco
+
+R2
+
+router ospf 1
+area 0 au m
+
+int s 1/1
+ip ospf me 13 m cisco
+
+virtual-link 를 했을경우는 R3 도 논리적으로 area 0에 연결됨 그래서 R3도 인증설정
+
+R3
+
+router ospf 1
+area 0 au m
+
+
+
+정보확인
+
+기본설정
+
+sh ip route
+sh ip int bri
+sh run
+
+sh cdp nei det
+sh int s 1/0
+sh ip int s 1/0
+
+dynamic
+
+sh ip pro
+
+eigrp
+
+sh ip eigrp nei
+sh ip eigrp to
+sh ip eigrp tr
+
+ospf 
+
+sh ip ospf nei
+sh ip ospf data
+sh ip ospf int [s1/0]
+sh ip ospf vir
+
+ACL(Access-list)
+
+ACL 의 기능 
+필터링 기능(허용:permit  차단:deny)
+방화벽과 같은 기능
+QOS,VPN,PBR 기능의 구성 요소
+NAT 기능의 구성요소
+
+ACL 의 구성 방법
+
+1.하향식 계산:설정을 하면 모두 마지막에 더해지고 하향식 계산
+
+- host-id 가 좀더 좁은 범위의 것을 먼저 설정
+
+172.16.0.0 /16  => Deny
+172.16.1.0 /24  => Permit
+
+172.16.2.1 => deny
+172.16.1.1 => deny
+
+172.16.1.0 /24  => Permit
+172.16.0.0 /16  => Deny
+
+172.16.2.1 => deny
+172.16.1.1 => permit
+
+2.ACL 은 임의의 줄과 줄사이것을 지우거나 수정할수 없다 즉 부분 삭제와 부분 수정이 불가능
+  단 named 는 가능
+
+3.ACL 을 설정을 하면 무조건 마지막에 나머지는 deny 하겠다라고 선언된다 
+  나머지는 deny 하겠다를 상쇄시켜주고 싶으면 나머지는 permit 하겠다라고 설정한다
+
+4.ACL 을 설정할때는 처음부터 차례대로 빠짐없이 전부 설정해줘야 한다
+
+ACL 의 종류
+
+standard    source 
+
+access-list[1~99][permit or deny][source][source.wildcardmak]
+
+access-list 10 deny 192.168.1.0 0.0.0.255
+access-list 10 permit any
+
+
+extended    source,destination,protocol    ,port,keyword
+
+access-list[100~199][permit or deny][protocol][source][source.wildcardmak]
+[destination][destination.wildcardmak][port][keyword]
+
+access-list 100 deny ip 192.168.1.0 0.0.0.255 172.16.1.0 0.0.0.255
+access-list 100 permit ip any any
+
+적용
+
+적용을 한곳에서만 ACL 이 동작한다
+
+13.13.10.0 /24 는 13.13.20.0 /24 로 접근을 할수 없게 하여라
+
+standard
+
+access-list 10 deny 13.13.10.0 0.0.0.255
+access-list 10 permit any
+
+int s 1/1
+ip access-group 10 in
+
+or
+
+int f 0/0
+ip access-group 10 out
+
+extended
+
+access-list 100 deny ip 13.13.10.0 0.0.0.255 13.13.20.0 0.0.0.255
+access-list 100 permit ip any any
+
+
+int s 1/1
+ip access-group 100 in
+
+or
+
+int f 0/0
+ip access-group 100 out
+
+named 
+
+부분 삭제와 부분 수정이 가능하다
+
+ip access-list extended AAA
+[permit or deny][protocol][source][source.wildcardmak]
+[destination][destination.wildcardmak][port][keyword]
+
+ip access-list extended AAA
+deny ip 13.13.10.0 0.0.0.255 13.13.20.0 0.0.0.255
+permit ip any any
+
+1.13.13.20.0/24 는 13.13.10.0/24 로 텔넷은되고 핑은 안되게 하여라
+2.13.13.30.0/24 는 13.13.10.0/24 로 텔넷은안되고 핑은 되게 하여라
+
+access-list 100 deny icmp 13.13.20.0 0.0.0.255 13.13.10.0 0.0.0.255
+access-list 100 deny tcp 13.13.30.0 0.0.0.255 13.13.10.0 0.0.0.255 eq 23
+access-list 100 permit ip any any
+
+or
+
+access-list 100 permit tcp 13.13.20.0 0.0.0.255 13.13.10.0 0.0.0.255 eq 23
+access-list 100 permit icmp 13.13.30.0 0.0.0.255 13.13.10.0 0.0.0.255
+access-list 100 permit ospf any any
+
+int s 1/0
+ip access-group 100 in
+
+NAT 단순변환  1:1      NAT  table 유지시간 1일
+
+PAT 확장변환  1:다수   NAT  table 유지시간 1분 
+
+
+주소변환
+
+insides local address 를 inside global address 로 변환
+내부의 ip 를 외부의 ip 로 변환
+내부의 사설 ip 를 외부의 공인 ip 로 변환
+
+=> ip 고갈 문제를 해결 , 보안성 
+
+정보 확인
+
+sh ip nat tr       : NAT table 정보 확인
+debug ip nat       : NAT 주소 변환 debug 
+
+clear ip nat tr *  : NAT table  을 삭제 
+
+NAT 종류
+
+
+static 
+
+1:1 방식 설정을 하면 자동적으로 NAT table 이 생성이 되고 삭제가 되지 않는다 유지시간도 없다
+
+ip nat inside source static 10.1.1.1 172.16.1.1
+
+int f 0/0
+ip nat inside 
+
+int s 1/0
+ip nat outside 
+
+dynamic
+
+한번 변환이 되어야 NAT table 이 생성 삭제가 가능 유지시간이 있다 
+
+pool 을 이용하는 방법
+
+access-list 10 permit host 10.1.1.1
+ip nat pool AAA 172.16.1.1 172.16.1.1 perfix-length 24
+ip nat inside source list 10 pool AAA overload
+
+int f 0/0
+ip nat inside 
+
+int s 1/0
+ip nat outside 
+
+pool 을 이용하지 않는 방법
+
+access-list 10 permit host 10.1.1.1
+ip nat inside source list 10 int s 1/0 overload
+
+int f 0/0
+ip nat inside 
+
+int s 1/0
+ip nat outside 
+
+
+DHCP
+자동 ip 할당
+
+설정
+
+할당할 서브넷 : 192.168.10.0/24
+기본 게이트웨이 : 192.168.10.254
+DNS 서버 : 192.168.10.252, 192.168.10.253
+도메인 이름 : voice.com
+임대 기간 : 무제한
+내부에서 동작중인 서버 : FTP 서버(192.168.10.250), WEB 서버(192.168.10.251)
+
+ip dhcp excluded-address 192.168.10.250 192.168.10.254
+
+ip dhcp pool AAA
+network 192.168.10.0 /24
+de
+default-router 192.168.10.254
+dn
+dns-server 192.168.10.252 192.168.10.253
+do
+domain-name voice.com
+l
+lease i
+
+

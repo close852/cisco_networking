@@ -1,0 +1,100 @@
+X/Y
+X=슬롯
+Y=포트
+
+
+이더넷.
+IEEE 
+표준 L2 설정 생략.
+ #R1
+
+
+Serial
+클럭 : 초당 보낼 양.
+DCE : 속도 맞춰줌 (클럭)
+DTE : 
+
+
+
+[C - 물리적연결된 네트워크]
+
+
+
+내부 네트워크 외부네트워크는 서브넷 마스크로 판단한다.
+
+시스템에서 다른 시스템으로 넘어갈 때 건너는 관문.
+
+
+라우팅 프로토콜
+다른 네트워크로 넘겨주기 위함.
+
+NAT : IP가 부족하니까 , 사설 -> 공인 | 여러 사설IP로 공인 IP 1개 공유 (오버로딩)
+
+static 	NAT 1:1 공인을 사설로 바꾸고 싶을 때
+	- 서버가 사설IP를 가지고 있을 때! ( 역변환이 목적)
+dynamic NAT N:1 다수의 PC가 하나의 공인 IP를 공유
+
+
+1. 사설 IP는 다 드랍당함.
+2. 라우팅 테이블에 사설주소 포함안됨.
+
+NAT inside  	: 사설
+NAT outside 	: 공인
+NAT local add 	: 사설 IP
+NAT global add	: 공인 IP
+ip nat inside source 192.168.1.1 100.10.12.1
+
+
+
+access-list 1 permit 192.168.1.0 0.0.0.255
+ip nat pool WORK StartIp EndIP netmask Subnetmask
+ip nat inside source list 1 pool WORD overload ( Port Address Translation 쓰라!)
+-외부에서 들어올 수 없는 이유 : 외부에서 들어올 때는, ip를 구분할 port 번호를 몰라서 drop
+
+ - 기본적으로 dynamic을 잡아 놓고, 추가로 static을 연결해준다. 
+dynamic은 end - end 통신이 안된다.
+
+
+
+
+
+R1
+int f 0/0
+no shut
+[encapsulation ethernet 한개만 있어서 생략]
+ip add 200.20.1.254 255.255.255.0
+
+int s 1/0
+no shut
+encapsulation hdlc | ppp | frame-relay
+bandwidth 128 [kbps]
+ip add 100.10.12.1 255.255.255.0
+
+R2
+
+int s 1/0
+no shut
+encapsulation hdlc
+bandwidth 64
+clock rate 64000
+ip add 100.10.12.2 255.255.255.0
+
+
+int s 1/1
+no shut
+encapsulation hdlc
+bandwidth 128[kb단위]
+clock rate 128000[bps]
+ip add 100.10.12.2 255.255.255.0
+
+
+
+
+
+
+
+
+
+1계층 link 1		HUB	전기적 신호 (주소 없음)
+2계층 line 2		Switch	MAC 주소
+3계츨 -ICMP로 확인.	Router	IP 주소

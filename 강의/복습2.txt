@@ -1,0 +1,57 @@
+admin 	down down - 지금 확인 중인 장비가 np shut!
+	down down - 상대방 연결 안됬거나, no shut
+	up   down - 프로토콜 다르거나, clock 잘못 줬거나
+
+
+  #R1
+int lo 0
+ip add 13.13.1.1 255.255.255.0
+
+int f 0/0
+no shut
+ip add 192.168.1.30 255.255.255.225
+int s 1/0
+no shut
+en hdlc
+bandwidth 128
+ip add 198.131.60.97 255.255.255.252
+
+
+  #R2
+int lo 0
+ip add 13.13.2.2 255.255.255.0
+
+int f 0/0
+no shut
+ip add 172.16.255.254 255.255.0.0
+int s 1/0
+no shut
+en hdlc
+bandwidth 64
+ip add 198.131.60.117 255.255.255.252
+
+  #R3
+int lo 0
+ip add 13.13.3.3 255.255.255.0
+
+int f 0/0
+no shut
+ip add  100.10.1.254 255.255.255.0
+int s 1/0
+no shut
+en hdlc
+bandwidth 128
+ip add 198.131.60.113 255.255.255.252
+
+  #R4
+int lo 0
+ip add 13.13.4.4 255.255.255.0
+
+int f 0/0
+no shut
+ip add  100.10.1.254 255.255.255.0
+int s 1/0
+no shut
+en hdlc
+bandwidth 128
+ip add 198.131.60.113 255.255.255.252

@@ -1,0 +1,160 @@
+Routing
+
+router 가 목적지 ip 를 보고 routing table 을 참조해서 
+발신 interface 로 전송한다
+
+기본적으로 routing table 은 비워있는 상태 그래서 routing table 을 완성시켜야 한다 관리자가 직접 설정을 해서 완성
+
+switching 
+
+switch 가 목적지 mac 주소를 보고 mac-address table 을 참조해서
+통신한다
+
+기본적으로 mac-address table 은 비워있는 상태 switch 가 알아서 
+mac-address table 을 완성
+
+transparent bridging
+
+L1  Hub  전기적인 신호를 증폭 같은 CD 안에 있다  half duplex ,CSMA/CD
+L2  Switch  CD 을 나누어준다 같은 BD 안에 있다 full duplex 
+L3  Router  물리적으로 BD 을 나누어 준다
+
+
+VLAN(Virtual Local Area Network)
+
+A VLAN = A logical network = A broadcast doamin
+
+논리적으로 BD 을 나누어 준다
+
+-broadcast traffic 의 영향을 최소화
+-LAN 성능저하를 예방할수 있다
+-ARP broadcast 차단으로 인한 unicast 접속이 불가능 (보안)
+
+VLAN 의 범위
+
+1~4094
+
+vlan 종류
+
+standard(1,1002,1003,1004,1005:기본생성이 되어있고 변경및 삭제가 불가능)
+1~1005
+
+extended
+1006~4094
+
+vlan 구성 방법
+
+1.vlan 생성,수정,삭제    sh vlan bri
+
+vlan 10     vlan 생성
+name HR     vlan 수정
+
+no vlan 10  vlan 삭제
+
+vlan 2-10  vlan 2 ~ 10 까지 한번에 생성
+
+no vlan 2-1001  vlan 2 ~ 1001 까지 한번에 삭제
+
+vlan database 정보는 NVRAM 에 저장되지 않고 vlan 정보는flash memory안에 vlan.dat 파일에 저장된다 reload 로 삭제되지 않는다 그래서 vlan을 삭제하려면
+delete flash:vlan.dat 명령어로 vlan.dat 를 삭제한후 relaod 한다
+
+2.해당 port 를 해당 vlan 에 매핑(access)    sh vlan bri
+
+int f 0/1
+switchport mode access
+switchport access vlan 10
+
+int r f0/1-5,f0/7-9
+sw m a
+sw a v 10
+
+3.trunk 완성   sh int tru
+
+Trunk 
+data 에 vlan-id 를 tagging 하는것 
+
+int f 0/24
+switchport trunk encapsulation ?
+
+isl     cisco 전용     native vlan X
+dot1q   IEEE 802.1q   native vlan O
+
+native vlan : vlan-id 가 tagging 되어있지 않는 data 처리하는 vlan-id
+즉 vlan-id 가 tagging 되어있는 않은 data 는 native vlan으로 처리된다
+
+int f 0/24
+switchport trunk encapsulation dot1q
+switchport mode trunk
+
+int r f 0/23-24
+sw t e d
+sw m t
+
+dot1q 만 지원 되는 스위치
+
+int f 0/24
+sw m t
+
+4. VTP(VLAN Trunk Protocol) 설정 sh vtp status
+옵션 : (vlan database 정보를 trunk port로 공유하는 protocol)
+vlan db : 생성/수정/삭제 - trunk port로 공유.
+=> vlan 설정 용이, vlan 관리 용이, trunk 완성 여부
+=> 설정을 한다면 처음에 하는 것이 좋다.
+
+vtp 구성조건
+
+vtp domain 일치	  vtp domain cisco
+vtp password 일치 vtp pass cisco	sh vtp pass
+trunk 완성	  
+
+vtp mode
+
+Server		: 정보를 제공.	VLAN 생성,수정,삭제   가능 일치 o
+Client		: 정보를 받음.	VLAN 생성,수정,삭제 불가능 일치 o
+Transparent	: 		VLAN 생성,수정,삭제   가능 일치 x
+ㄴ VTP 안쓰겠다.
+
+
+revision number : 0 생성/수정/삭제 시 +1 
+
+5. inter-vlan
+서로 다른 vlan을 통신시켜주기 위해서 L#3(Router) 장비에서 해주는 vlan routing
+
+sub-interface : 논리적 인터페이스(물리적 인터페이스 위에 구성)
+
+int f 0/0
+no shut
+
+int f 0/0.11
+encapsulation  dot1q
+ip add 192.168.11.254 255.255.255.0
+
+int f 0/0.12
+en d 12
+ip add 192.168.12.254 255.255.255.0
+[캡슐화를 입력해야 ip add 가 입력이 된다.]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

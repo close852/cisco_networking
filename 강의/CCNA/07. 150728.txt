@@ -1,0 +1,147 @@
+시스코 
+1. 축약
+2. no
+3. 설정이 덮어씌여지지 않는다.
+	예외) password
+	      단일 ip
+부팅 순서.
+1.POST
+2.Boot
+IOS 찾음
+4. OS 로딩
+5.NVRAM 체크 [0x2102 ? 0x2142?]
+
+
+
+설정의 두가지 
+.필수 설정
+.옵션 설정
+
+				### Password 설정(옵션)
+			.장비 접속에 대한보안이 좋아진다.
+
+
+:enable
+  .password	: 평문	 password가 같으면 안댐	(config)#enable password soldesk
+  .secret	: 암호화 우선순위가 높다.	(config)#enable secret cisco
+
+:line
+  .con
+	>en
+	#conf t
+	(config)#line c 0
+	(config-line)#pass cisco
+	(config-line)#login	(login 유무에 따라서 password 입력 유무가 정해짐)
+	
+	<라우터 접속할 때, password 물어봄.>
+  .aux
+	>en
+	#conf t
+	(config)#line a 0
+	(config-line)#pass cisco
+	(config-line)#login	(login 유무에 따라서 password 입력 유무가 정해짐)
+
+  .vty
+	>en
+	#conf t
+	(config)#line v 0 4
+	(config-line)#pass cisco
+	(config-line)#login	(login 유무에 따라서 password 입력 유무가 정해짐)
+	<telnet/ssh 접속할 때 password 물본다.
+
+
+				### Interface 설정(옵션)
+#sh ip int brief
+
+R1
+>en
+#conf t
+(config)# int lo 172
+(confing-if)# ip add 172.16.1.1 255.255.255.0
+(config)#no shut(안해도 됨 알아서 열려요)
+
+>en
+#conf t
+(conf)# int f 0/0
+(conf)# ip add 13.13.10.1 255.255.255.0
+(conf)#no shut
+
+
+>en
+#conf t
+(conf)# int s 1/0
+(conf)# ip add 13.13.12.1 255.255.255.0
+(conf)#no shut
+
+
+DCE가 연결된 Serial Clock rate 설정해야한다.
+
+Lo : 루프백 논리적 인터페이스 [관리자가 수동으로만들어준 interface]
+	1. 관리목적
+	2. 확인할 때 
+
+
+				### 기타옵션 설정
+
+no ip domain-lo[okup]	:불필요한 DNS 요청 방지.
+line c 0		
+logging sy		:줄 정리
+exec-t 0 0		:콘솔 종료 x
+exit
+
+
+라우팅 테이블조건
+1. L1 up L2 up 나온다.
+
+>en
+#conf t
+(config)#no ip domain-lo
+(config-line)#line c 0
+(config-line)#logging sy
+(config-line)#exec-t 0 0
+(config-line)#exit
+(config)#
+
+
+
+
+Router>en
+Router#conf t
+Router(config)#no ip domain-lo
+Router(config)#line c 0
+Router(config-line)#logging sy
+Router(config-line)#exec-t 0 0
+Router(config-line)#exit
+
+
+
+#enable password ciscofan
+Router(config)#enable secret cisco
+Router(config)#line c 0
+Router(config-line)#password cisco
+Router(config-line)#login
+Router(config-line)#exit
+Router(config)#line v 0 4 
+Router(config-line)#password cisco
+Router(config-line)#login
+Router(config-line)#exit
+Router(config)#line a 0
+Router(config-line)#password cisco
+Router(config-line)#login
+Router(config-line)#exit
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

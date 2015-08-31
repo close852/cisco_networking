@@ -1,0 +1,41 @@
+Network : 장비 2대 이상의 연결.
+
+Encapsulation : 데이터 + 출발지 + 목적지  [header] + [data] + [trailer]
+	unicast   : 1:1통신 
+	multicast : 1:N 통신
+	boradcast : 1: 전체 통신
+	 ㄴ Alphanet : LAN과 WAN이 나뉜 특징 중 하나.[과도한 트래픽 발생 -broadcast
+		
+
+		### LAN(Local Area Network)
+
+LAN : 통신주체인 자신이 포함된 동일 네트워크 구간을 의미하며 비교적 작은범위로 구성.
+특징 		: 네트워크 구성시 비용이 증가하지만, 통신 & 유지보수비용이 감소.
+연결장비 	: NIC[Network Interface Card](랜카드), Switch, T/P Cable
+통신 프로토콜 	: Ethernet(IEEE에서 지정한 LAN구간 표준 Protocol)
+ .Ethernet	: 10Mbps
+ .FastEthernet	: 100Mbps
+ .GigabitEthernet: 1000Mbps	(1GB 전송할 시, 8초 걸린다. 1000M * 8 * 1bit)
+통신 주소	: Mac-Address (16진수, 48bit,HH:HH:HH:HH:HH:HH)
+
+PC간 통신은 스위치가 이더넷 프로토콜을 사용하여 이더넷 헤더 안에 있는 MAC 주소를 보고 연결하여, 데이터 통신을 한다.
+
+bit 	: 데이터 통신(속도) 단위 1bps
+byte 	: 데이터 표현 단위	 1Byte
+
+
+
+		### WAN(Wide Area Network)
+
+
+WAN : 통신 주체인 자신이 포함되지 않은 외부 네트워크 구간을 의미하며 비교적 큰 범위로 구성한다.
+
+[분리된 LAN과 LAN을 연결하는 네트워크]
+[라우터는 다른 네트워크간에 연결해주는 장치]
+      Router	- Internet - Router
+	|			|
+ PC -Switch- PC		 PC -Switch- PC
+특징 		: 일반적으로 ISP로 부터 임대회선을 사용하기 때문에, 구축비용이 감소하지만 통신 및 유지/보수 비용이 증가한다.  ISP = {KT, LG, SK}
+연결장비 	: Router
+통신 프로토콜	: IP
+통신주소	: IP Address(10진수 32bit, A.B.C.D)

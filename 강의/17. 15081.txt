@@ -1,2 +1,0 @@
-default int s 1/0
-TFTP

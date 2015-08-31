@@ -1,0 +1,174 @@
+en
+conf t
+enable pass cisco1
+enable secret cisco
+
+line c 0
+password cisco
+login
+line a 0
+password cisco
+login
+line v 0 4
+password cisco
+login
+
+end
+conf t
+
+no ip domain-lo
+line c 0
+logging sy
+exec-t 0 0
+end
+
+
+defualt 경로
+routing table 경로들 중에서 가장 마지막에 참조 하는 경로
+
+default static 
+
+ip route 0.0.0.0 0.0.0.0 [next hop'ip]
+
+or 
+
+ip route 0.0.0.0 0.0.0.0 [자기 interface 네임]
+
+
+router  가 사용하는 switching 방식
+routint table 의 참조 여부
+-process switching : 매번 routing table 을 참조
+-fast switchint :처음에만 routing table 참조하면 캐시복제 그이후는 캐시참조
+-CEF :routing table 이 완성될때 캐시 복제 그이후는 캐시 참조
+(cisco express forwarding)
+
+
+AS(Autonomous System)
+하나의 정책에 의해서 동작하는 네트워크
+
+(빠른 convergence 재계산 속도)
+IGP : AS 안에서 구동되는 routing protocol
+	.Distance Vector
+		:RIP , RIPv2
+	.Link State
+		:IOPF,IS-IS
+	.Advanced Distance Vector
+		:EIGRP
+EGP : AS 와 AS 사이에서 구동되는 routing protocol
+(많이 많이)
+	.BGPv4(Path Vector)
+
+
+
+
+
+			###distance vector의 특징
+	.주기적으로 인접한 router에게만 routing table 전체를 update
+	.CPU 소모율이 많다.
+	.update를 위한 대역폭 소비량 많다.
+	.구조가 간단하다.(옆에만 있으면 줌.)
+	.확장성이 떨어진다.
+	.변화에 적응이 느리다.
+	.알고리즘상 루프가 발생한다(루프방지법 :split-horizon)
+
+
+
+		##RIP (Routing Infomation Protocol)
+	.개방형
+	.AD 120
+	.UDP = 520
+	.classful routing protocol
+	.VLSM,CIRD x
+	.자동요약만 지원
+	.broadcast update
+	.update 30초 invalid time(수신대기시간)180초 holddown(삭제 대기)180초
+   	  flushed time(총삭제 시간) 240초
+	.균등 로드 분산(기본 4개 ~ 최대 16개)
+	.metric = hop count = router 경우(1 ~ 15)1
+	 ㄴ 메트릭 값이 낮은 걸 사용
+	.설정 classful 이면서, classful하게 설정한다.
+
+
+router rip (라우터모드)
+net 172.16.0.0
+net 13.0.0.0
+
+
+	## ripv1 과 ripv2 차이점
+
+ripv1                                                 ripv2
+classful routing protocol             		classless routing protocol
+VLSM,CIDR X                           		VLSM,CIDR O
+자동요약만 지원                      		자동,수동 요약 기본은 자동=>끄자
+broadcast update                        	multicast update (224.0.0.9)
+
+triggered update X                 		triggered update(WAN P2P에서만 지원)
+해시 함수를 이용한 MD5 인증 X  			해시 함수를 이용한 MD5 인증 O
+
+
+
+#Ripv2 설정
+
+classful 하게 설정
+
+172.16.1.0 /24
+13.13.10.0 /24
+13.13.12.0 /24
+
+router rip
+v 2
+net 172.16.0.0
+net 13.0.0.0
+no au
+
+전체 옵션
+
+passive-interface
+(전체옵션:passive-interface로 지정된 interface 로는 routing 정보를 update 못함
+  단 수신은 한다)
+=> 불필요한 update traffic 의 낭비를 막아준다
+
+
+[라우터가 아닌 switch나 looop에 흘러가는 것을 막아 준다.]
+-router)#passive-interface lo 172
+-router)#passive-interface f0/0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

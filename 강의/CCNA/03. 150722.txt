@@ -1,0 +1,341 @@
+studydesk.co.kr
+study0797
+20150720
+
+
+ProtNumber : 데이터 서비스 번호 제공.
+Sequence Number : 데이터 보낸 횟수
+Acknowledgement Number : 응답 횟수
+
+
+				###Transmission Control Protocol
+
+		#흐름제어
+	OS의 버퍼 크기만큼 데이터를 송신 , 수신.
+	데이터 전송 처리율증가, 메모리 효율성 증가
+
+		#오류제어
+	세그먼트의 손상여부 체크
+	Timeout되면 세그먼트 재전송한다.
+
+
+		#혼잡제어
+	ECN 바쁘다.(처리율 낮춰준다.)
+	손실 발생시, 재전송으로 인한 지연 발생(처리율 감소.)
+
+
+		#TCP 헤더 [20Byute]
+	
+	# Source Prot Number : 
+		시작 포트 번호 (16bit)
+
+	# Destination Port Number : 
+		목적지 포트 번호 (16bit)
+
+	# Sequence Number : 
+		데이터 횟수 (32bit) 
+
+	# Acknowledgement Number : 
+		받은 응답 번호 (32bit)
+
+	# Head Length : 
+		헤더의 크기 (4bit)
+
+	# Reserverd : 
+		예약 번호 (6bit)
+
+	# Control Flag :
+		TCP제어 부호비트 (6bit)
+
+	  SYN : 데이터 송식
+	  ACK : 데이터 수신 확인
+	  FIN : TCP 연결이 정상적으로 종료한다.
+	  RST : 정상적이지 않게 종료한다. 연결에러 또는 강제연결 해지.[방화벽에서 많이 쓰인다.]
+	  PSH : 버퍼만큼 안차더라도 데이터를 전송해라.
+	  URG : 다른 패킷들에 비해 먼저 처리를 요청.
+
+	# Window Size : 
+		[윈도우 버퍼 사이즈] (16bit)
+
+	# Checksum :
+		데이터 오류검사 (16bit)
+
+	# Urgent Pointer : 
+		[URG 긴급 메시지의 위치] (16bit)
+
+	# Options & Padding
+
+3way 연결
+4way 연결 끊기
+
+
+##################################################################################################
+
+				### UDP [User Datagram Protocol]
+빠른 요청에 의한 빠른 응답.[1순위 속도! Best Effort Service : 신뢰성은 고려사항이 아니다.]
+
+
+		# Best Effort Service
+
+
+		#UDP Header 8Byte
+		
+	#Source Port Number : (16bit)
+	#Destination Port Number (16bit)
+	#Total Length : 헤더와 데이터를 합친 크기. (16bit)
+	#Checksum : 오류체크를 함. 있는지 없는지 정도. (16bit)
+
+
+
+
+
+
+PC
+ - PC IP : 192.168.0.98
+ - PC MAC : D0-27-88-42-BE-96
+
+ - GW IP :192.168.0.1
+ - GW MAC : 00-08-9f-56-59-18
+
+ - DNS Server IP : 168.126.63.1
+ - Web Server IP : 125.209.222.142
+
+(요청)			## PC ------------->DNS
+	Ethernet		IP		     UDP		DNS
+   SA: D0-27-88-42-BE-96   SA:192.168.0.98	SA:Random(49474)    www.naver.com
+   DA: 00-08-9f-56-59-18   DA:168.126.63.1	DA:53		     [IP 몰라요]
+	
+(응답)			## PC <-------------DNS
+	Ethernet		IP		     UDP		DNS
+   SA: 00-08-9f-56-59-18   SA:168.126.63.1	SA:53	  	    www.naver.com
+   DA: D0-27-88-42-BE-96   DA:192.168.0.98	DA:Random(49474)   http://202.179.177.22/
+
+			     DNS(168.126.63.1)
+	(192.168.0.1)	       |
+	Router-------------Internet---------------Webserver (202.179.177.22)
+	  |
+	  |
+	Switch
+	  |
+	  |
+	 PC(192.168.0.98)
+
+			## PC -------->Web Server
+		Ethernet			IP				TCP
+	SA : D0-27-88-42-BE-96(PC)	SA : 192.168.0.98		Source Port : Random(51651) , Seq = 0
+	DA : 00-08-9f-56-59-18(GW)	DA : 202.179.177.22		Destnation Port : 80 , SYN
+
+
+			## PC <--------Web Server
+		Ethernet			IP				TCP
+	SA : 00-08-9f-56-59-18(GW)	SA : 202.179.177.22		Source Port : 80 , Seq = 0 ,ACK = 1
+	DA : D0-27-88-42-BE-96(PC)	DA : 192.168.0.98		Destnation Port : (51651) , SYN,ACK
+
+
+
+			## PC -------->Web Server
+		Ethernet			IP				TCP
+	SA : D0-27-88-42-BE-96		SA : 192.168.0.98		Source Port : (51651) , Seq = 1, ACK=1
+	DA : 00-08-9f-56-59-18		DA : 202.179.177.22		Destnation Port : 80 , ACK
+
+
+			### IP 
+
+ Layer3계층 Protocol
+ Router 데이터 전송시 사용하는 Protocol
+ 주소 : IP Address
+
+
+##################################################################################################
+
+
+			### IP Header[비 연결형]
+ Version [4bit]
+ .IP version을 표기(IPv4, IPv6)
+
+ Header Length [4bit]
+ .IP Header의 크기를 표기
+
+ Type of Service [8bit]
+ .각 트래픽을 분류한 후 우선순위 값을 사용하여 차등화 서비스를 제공하는 기능.
+ .라우터는 FIFO 로 데이터를 처리하는데, Priority값을 설정하여, 처리하는 비트.
+ 
+ Total Length [16bit]
+ .IP Header와 데이터의 크기를합한 크기를 의미.
+
+ Identification
+ .호스트를 구별하기 위한 식별자 번호.
+
+ Flag [3bit]
+ 고정 DF[(단편화유무)안 짤렸니? 1 : 0] MF[더있니? 1 : 0]
+ 0    		 0				0
+
+ Flagmentation Offset [13bit]
+ .단편화된 데이터의 순서번호를 표기.
+ .수신측에서는 순서번호를 사용하여 원본 데이터로복구.
+
+ MTU Size[Maxium Transmission Unit]
+ .통신장비가 한번에 전송가능한 데이터의 가장 큰 크기를 의미한다.
+ .변경이 가능하며 모든 밴더는 기본값 1500Byte로 구성한다.
+ .전송할 데이터의 크기가 MTU Size보다 큰 경우 해당 데이터를 분할하여 전송한다.
+
+ 단편화
+ .전송할 데이터의 크기가 MTU Size보다 큰 경우
+  해당 데이터를 분할하여 전송해야 한다. 해당 데이터를 분할하는 과정을 단편화라고 한다.
+  패딩 - 장비에 부하가 많이 걸린다. 
+
+ TTL [8bit]
+ .Loop를 방지하기위해서 Hop수를 제한하는 기능.
+		* Hop : 라우터를 넘어가는 횟수 [255에서 깍아나감 (1->0 못감 드랍!!)]
+
+ Protocol [8bit]
+ .IP Header의 상위 Protocol을 확인하는 기능
+ .ICMP	: 1
+ .TCP	: 6
+ .UDP	: 17
+ .EIGRP	: 88
+ .OSPF	: 89
+
+ Head Checksum [8bit]
+ .IP Header의 오류를 검출 / 재전송기능 없다.
+
+ Source IP address [32bit]
+ .출발지 IP 주소
+
+ Destination IP address [32bit]
+ .도착지 IP 주소
+
+
+			### ICMP [Internet Control Message Protocol] 연결형 프로토콜
+.IP는 대표적인 비연결형 Protocol이므로 연결, 통신 유무를 확인할 수없다.
+.IP 네트워크 환경에서 연결, 통신 유/무확인 시 ICMP를 사용해야 한다.
+.ICMP TYPE-8 : Request
+.ICMP TYPE-0 : Reply
+
+			### ARP [Address Resolution Protocol]
+Layer3계층 주소(IP Address)를 사용해서 Layer2계층 주소(MAC Address)를 찾아내는 프로토콜
+
+
+			### OSI 참조모델
+
+1. 호환성 극대화
+2. 모듈화
+[어떤 프로토콜을 쓰느냐가 문제 ! 기계는 문제가 없다.]
+각계층을 표준화 하여 모듈화 시킨 것.
+	장애 발생시, 장애 복구가 쉽다.
+
+
+-------------상위계층(OS)
+Application
+Presentation
+Session
+-------------하위계층(Network)
+Transport
+Network
+DataLink
+Physical
+
+계층	이름		데이터 단위	프로토콜		장비
+
+Layer7	Application	
+.사용자 인터페이스
+
+Layer6	Presentation
+.데이터 표현방식 결정 데이터 암호화,문자변환
+
+Layer5	Session	
+.통신 연결을 위한 다양한 옵션 결정 & OS간 논리적인 연결을 담당.
+.데이터 전송전에 정해진 약속에 의한 세션의 시작과 종료를 제어.
+.통신의 방향성 결정
+	# Single Duplex : 라디오
+	#   Half Duplex : 무전기,CSMA/CD
+	#   Full Duplex : 전화기
+
+Layer4 Transport 	Segment		TCP/UDP		
+.데이터를 전송하는 구간[신뢰성 기반 ? TCP && 신속성 기반 ? UDP].
+
+Layer3 Network		Packet		IP/ICMP/ARP		라우터
+.인터넷 망 구간에서의 통신을 담당.
+
+Layer2 DataLink		Frame	 	Ethernet/HDLC/PPP	스위치
+.물리적으로 케이블이 연결된 구간을 오류없이 데이터를 전송하는 것이 목적이다.
+
+Layer1 Physical		Bit Code 	0/1 단위 bps
+
+##################################################################################################
+
+			### IP Address
+
+IANA(Internet Assigned numbers Authrity)
+
+듀얼 스택 호환된다.
+IPv4 = 10진수 32bit :2^32 약42억
+IPv6 = 16진수 128bit : 2^128 
+
+
+ Layer3에서 사용되는주소
+ 자신이 포함되지 않은 외부 네트워크로 통신시 사용되는 32bit 주소
+ IP Address는 5개의 Class로 구성.
+ SubnetMask를 사용하여 네트워크를 구분.
+ Subneting, VLSM을 사용하여 하나의 네트워크를 분할하여 사용가능
+ VLSM을사용하여 다수의 네트워크를 하나의 네트워크로 통합하여관리
+
+
+
+			#IP Class
+
+
+		# A Class(첫번째 비트가 0이면 A 클래스)
+ 범위 	  :  0 ~ 127	[0.0.0.0 ~ 127.255.255.255]
+		(단, 0과 127은 예약된 IP이므로 임의적으로 사용할 수 없다.
+		*사용범위 : 1 ~ 126
+ 공통비트 : 0 0000000 ~ 0 1111111
+ S/M	  : 255.0.0.0 = HOST 2^24 = 16777216
+
+		# B Class
+ 범위 	  :  128 ~ 191 [128.0.0.0 ~ 191.255.255.255]
+ 공통비트 : 10 000000 ~ 10 111111
+ S/M	  : 255.255.0.0 = HOST 2^16 = 65536
+
+		# C Class
+ 범위 	  :  192 ~ 223	[192.0.0.0 ~ 223.255.255.255]
+ 공통비트 : 110 00000 ~ 110 11111
+ S/M	  : 255.255.255.0 = HOST 2^8 = 256
+
+--------------------------------------------------------------------- ↑Unicast용 IP주소
+
+		# D Class
+ 범위 	  :  224 ~ 239 [224.0.0.0 ~ 239.255.255.255]
+ 공통비트 : 1110 0000 ~ 1110 1111
+
+--------------------------------------------------------------------- ↑Multicast용 IP주소
+
+		# E Class
+ 범위 	  : 240 ~ 255	[240.0.0.0 ~255.255.255] 
+ 공통비트 : 1111 0000 ~ 1111 1111
+
+--------------------------------------------------------------------- ↑예비용 IP주소
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
