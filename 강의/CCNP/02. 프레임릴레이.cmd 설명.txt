@@ -1,0 +1,15 @@
+modle = 모델명
+autostart = 다이나밉스 킬 때, 켜져있게 할지, 꺼져있게 할 지
+
+[localhost] = PC 127.0.0.1 ===> RAS(Remote Access Server)
+
+원격으로 콘솔 접속하기 위함!
+
+workingdir => tmp 밑에 만든다![tmp 지우면 nvram 날아간다.]
+
+os에대한 최적값 idlepc 값을 찾아주니까
+서로 다른 OS를 쓴다면, 다 찾아줘야한다.
+idlepc 값은 router에 최적값이 아닌, os의 최적값이다.
+
+0x2102 = nvram 에서 ram으로 로딩하세요
+0x2142 = nvram 에서 ram으로 로딩하지 마세요.
