@@ -1,0 +1,281 @@
+                                 ### Router의 동작원리
+
+-Router는 Lyaer 3계층을 대표하는 장비이며 자신이 포함되지 않은 외부 네트워크로 통신시 사용되는 장비이다.
+
+-통신 Protocol은 IP를 사용하며 주소는 IP Header에 포함된 IP address를 사용한다. (10진수 32bit의 주소 체계)
+
+-Router는 데이터가 입력되면 Layer 3 Header의 목적지 IP 주소를 근거로  Routig table을 참조하여 Next-hop까지 전파
+
+-Router는 Routing table에 등록되지 않은 네트워크 정보는 Drop을 실시한다.
+
+-Router는 목적지까지의 통신을 책임지지 않는다. (Next-hop까지만)
+
+-Router는 직접 연결된 Local 네트워크 정보는 가장 신뢰적인 Connected로 경로정보 학습 실시한다.
+
+-Router는 직접 연결되지 않은 나머지 네트워크 정보는 Static , Dynamic Routing Protocol을 사용하여 경로정보 학습 실시
+
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------
+
+                            ### 경로정보 학습
+
+-경로정보 학습이란 목적지 네트워크 정보를 학습하는 행위
+
+-경로정보 학습을 실시하기위해서는 Routing protocol 안에  반드시 Next-hop이 보장되어야 한다.
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------
+
+
+
+                                      ### Router의 기본 Mode
+
+                ## User Mode
+
+-해당 Router에 접속은 Console , AUX , VTY(Telnet , SSH)등을 사용할수있다.
+-위의 방식으로 접속을 실시하게되면 기본적으로는 User mode로 접속이 실시된다.
+
+Router>  <--- User mode
+
+-CISCO Router는 Privilege Level을 사용하여 권한을 적용한다. (Privilege Level = 0 ~ 15)
+-User mode는 Privilege Level이 1로 제한되기때문에 해당 장비의 기본적인 상태확인만 가능하다.
+
+
+
+
+                ## Privilege Mode
+-User mode에서 정보확인및 설정을 실시하기위해서는 상위 Mode로 전환을 실시해야한다.
+
+Router> enable
+!
+Router#  <-- Privilege mode
+
+-정보확인
+ .show	: 정적인 정보 확인
+ .debug	: 동적인 정보 확인
+
+-저장	[RAM ---> NVRAM]
+ .Copy
+
+-삭제
+ .RAM	 : reload
+ .NVRAM	 : erase
+ .Flash	 : delete
+
+-통신 및 접속
+ .IP 네트워크 구축후 ICMP를 사용한 통신연결 확인
+ .Telnet , SSH등을 사용한 원격 접속
+
+
+
+
+                ##  Global Mode
+-Router는 RAM에 저장된 Command를 기반으로 동작을 실시하는 장비이며
+ Global mode에서 설정한 모든 command는 실시간으로 RAM에 저장된다.
+
+Router# configure terminal
+!
+Router(config)#   <-- Global Mode
+!
+Router(config)# exit : 이전 Mode로 전환
+
+
+---------------------------------------------------------------------------------------------------
+
+                                      ### RAM , NVRAM
+
+-Router는 RAM에 기반하는 장비로써 설정한 모든 Command는 RAM에 저장이 실시되며
+  해당 Router는 RAM에 설정되  Commnad에의해 동작을 실시한다.
+
+
+                                         RAM                                     NVRAM
+
+-특징                              휘발성 메모리                         비 휘발성 메모리
+
+-확인                         show running-config                 show startup-config
+
+-저장                        실시간 저장 [Enter]            copy running-config startup-config
+
+-삭제                                 reload                            erase startup-config
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+===========================================================================================================================
+
+
+
+                        ## Twisted-Pair Cable
+
+       # UTP Straight-Through Cable (Direct)
+-이종간의 장비 연결시 사용되는 Cable
+
+                 Fa              Fa
+ .EX)      PC -------------- Switch
+
+                 Fa              Fa
+ .EX) Switch -------------- Route
+
+           Switch-------------Router
+	백주		백주
+	   주	   	   주
+	백초		백초
+	   파	  	   파
+	백파		백파
+	   초	   	   초
+	백빨		백빨
+	   빨	   	   빨
+
+
+
+
+
+
+
+       # UTP Crossover Cable
+-동일 장비 연결시 사용되는 Cable
+
+                 Fa           Fa
+ .EX)      PC ------------  PC
+
+                 Fa          Fa
+ .EX) Switch ------------ Switch
+
+                  Fa         Fa
+ .EX)     Hub ------------ Hub
+
+                 Fa          Fa
+ .EX) Router ------------ Router
+
+                 Fa          Fa
+ .EX)      PC ------------  Router
+
+
+           Switch-----------Switch
+	백주		백초
+	   주	   	   초
+	백초		백주
+	   파	  	   파
+	백파		백파
+	   초	   	   주
+	백빨		백빨
+	   빨	   	   빨
+
+
+
+
+
+
+       # UTP Roll-over Cable  (Console Cable)
+-Router , Switch의 Console Port로 접속시 사용되는 Cable
+
+
+                              Con
+ .EX)      PC ------------  Router
+
+                              Con
+ .EX)      PC ------------  Switch
+
+
+              PC-------------Switch
+	백주		   빨
+	   주	   	백빨
+	백초		   초
+	   파	  	백파
+	백파		   파
+	   초	   	백초
+	백빨		   주
+	   빨	   	백주
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,131 @@
+라우터 -HDLC,PPP- 라우터
+라우터 - FRSW - 라우터
+
+
+Point to Point
+O - O
+
+Multi-Access
+스위치
+| | | |(같은 네트워크)
+O O O O
+
+IEEE - Ethernet
+
+
+
+Frame-Relay
+DLCI가 식별자(코드값)이다.
+
+
+패킷 스위칭 : 포트가 열려 있어서, 패킷 넘기면 넘어감,
+서킷 스위칭 : 통신 할 때만, 연결되서 데이터 전송.
+
+ARP L2주소로 , L3주소를 찾는것.
+ㄴ> MAC으로 IP 찾을 때 , Frame-Relay 에서 DLCI로 IP 찾을 때
+
+서울 102 ->FRSW-> 102 > FRSW(swap) > 201 광주
+서울 103 ->FRSW-> 103 > FRSW(swap) > 301 부산
+
+서비스 제공 DCE
+서비스 받음 DTE
+
+en
+conf t
+no ip domain-lo
+line c 0 
+logging sy
+exec-t 0 0
+ho R
+
+
+
+	#FRSW
+no ip routing
+ fr s [frame-relay switching]
+ int s 1/0
+ no shut
+ encapsulation  frame-relay
+ frame-relay intf-type dce
+ [bandwidth 1544] 기본값이라 생략 가능
+ clock rate 1612800 (1544000)
+ frame-relay route 102 int s 1/1 201
+ frame-relay route 103 int s 1/2 301
+
+ int s 1/1
+ no shut
+ encapsulation  frame-relay
+ frame-relay intf-type dce
+ [bandwidth 1544] 기본값이라 생략 가능
+ clock rate 1612800 (1544000)
+ frame-relay route 201 int s 1/0 102
+ frame-relay route 203 int s 1/2 302
+
+ int s 1/2
+ no shut 
+ en f
+ fr intf dce
+ clock rate 1612800
+ frame-relay route 301 int s 1/0 103
+ frame-relay route 302 int s 1/1 203
+================================================
+	#R1
+int s 1/0
+no shut
+en frame-relay
+frame-relay map ip 192.168.100.2 102
+frame-relay map ip 192.168.100.3 103
+ip add 192.168.100.1 255.255.255.0
+
+	#R2
+int s 1/0
+no shut
+en frame-relay
+frame-relay map ip 192.168.100.1 201
+frame-relay map ip 192.168.100.3 203
+ip add 192.168.100.2 255.255.255.0
+
+	#R3
+int s 1/0
+no shut
+en f
+frame-relay map ip 192.168.100.1 301
+frame-relay map ip 192.168.100.2 302
+ip add 192.168.100.3 255.255.255.0
+
+
+	## 정보확인
+  R1
+show ip route
+ping 192.168.100.2
+ping 192.168.100.3
+  R2
+show ip route
+ping 192.168.100.1
+ping 192.168.100.3
+  R2
+show ip route
+ping 192.168.100.1
+ping 192.168.100.2
+
+sh frame-relay map
+active	: 잘됨
+inactive : 나는 되고 상대가 안됨,
+delete	: 내가 안됨 상대는 모름.
+ .LMI 타입이 다른 경우(기본타입cisco)
+ . 
+
+====================================================================
+
+	#FRSW
+no ip routing [라우팅 기능 끄기]
+frame-relay switching
+int s 1/0
+no shut
+en f
+frame-relay intf dce
+clock rate 1612800
+frame-relay route 102 int s 1/1 201
+
+
+

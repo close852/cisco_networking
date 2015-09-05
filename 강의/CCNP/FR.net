@@ -1,0 +1,52 @@
+model = 2691
+autostart = False
+ghostios = true
+sparsemem = true
+mmap = False
+
+[localhost]
+port = 7200
+udp = 10000
+workingdir = ..\tmp\
+
+
+    [[2691]]
+        image = ..\ios\C2691-AD.BIN
+        ram = 256
+        confreg = 0x2102
+        exec_area = 32
+        idlemax = 100
+
+    [[router R1]]
+	console = 2001
+	slot1 = NM-4T
+
+    [[router R2]]
+	console = 2002
+	slot1 = NM-4T
+
+    [[router R3]]
+	console = 2003
+	slot1 = NM-4T
+
+    [[router R4]]
+	console = 2004
+	slot1 = NM-4T
+
+    [[router R5]]
+	console = 2005
+	slot1 = NM-4T
+
+    [[router R6]]
+	console = 2006
+	slot1 = NM-4T
+
+    [[router FRSW]]
+	console = 2007
+	slot1 = NM-4T
+	s1/0 = R1 s1/0
+	s1/1 = R2 s1/0
+	s1/2 = R3 s1/0
+	s1/3 = R4 s1/0
+	s0/0 = R5 s1/0
+	s0/1 = R6 s1/0

@@ -1,0 +1,132 @@
+                # R1
+
+enable
+configure terminal
+!
+no ip domain-lo
+!
+line console 0
+ logging sy
+ exec-timeout 0 0
+!
+hostname R1
+!
+
+
+
+                # R2
+
+enable
+configure terminal
+!
+no ip domain-lo
+!
+line console 0
+ logging sy
+ exec-timeout 0 0
+!
+hostname R2
+!
+
+
+
+
+                # R3
+
+enable
+configure terminal
+!
+no ip domain-lo
+!
+line console 0
+ logging sy
+ exec-timeout 0 0
+!
+hostname R3
+!
+
+
+
+
+                # R4
+
+enable
+configure terminal
+!
+no ip domain-lo
+!
+line console 0
+ logging sy
+ exec-timeout 0 0
+!
+hostname R4
+!
+
+
+
+
+                # R5
+
+enable
+configure terminal
+!
+no ip domain-lo
+!
+line console 0
+ logging sy
+ exec-timeout 0 0
+!
+hostname R5
+!
+
+
+
+
+                # R6
+
+enable
+configure terminal
+!
+no ip domain-lo
+!
+line console 0
+ logging sy
+ exec-timeout 0 0
+!
+hostname R6
+!
+
+
+
+
+                # FRSW
+
+enable
+configure terminal
+!
+no ip domain-lo
+!
+line console 0
+ logging sy
+ exec-timeout 0 0
+!
+hostname FRSW
+!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

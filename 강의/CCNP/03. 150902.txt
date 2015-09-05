@@ -1,0 +1,87 @@
+Broadcast => Ethernet
+non Broadcast => F/R Multipoint
+P to P => HDLC,PPP
+P to M => 
+
+
+int s 1/0.123 multi
+frame map ip 192.168.100.2 102 broadcast
+frame map ip 192.168.100.3 103 broadcast
+
+
+
+int s 1/0.123 multi
+frame map ip 192.168.100.1 201 broadcast
+frame map ip 192.168.100.3 201 broadcast
+
+
+int s 1/0.123 multi
+frame map ip 192.168.100.1 301 broadcast
+frame map ip 192.168.100.2 301 broadcast
+
+distance vector 계열 루프방지 알고리즘
+split horizon! 으로 끊긴다.
+
+
+
+
+
+
+통신 설정할 때 [FR 환경]
+
+1. broadcast 넣어줄것
+2. hub에서 no ip split-horizon 해줘야 한다.
+- sub는 자동 켜짐 / 주는 자동 꺼짐.
+
+hub & spoke에서는 
+hub에서 no ip split-horizon 해줘야 보임!
+
+ no ip split-horizon 
+ no ip split-horizon eigrp 100[AS]
+
+[CIDR]
+ . 무Class 형식을 의미 . IP 주소에 대하여 class기반이 아닌
+ SM를 기반으로 동작하는 기능/
+
+
+classless 
+ - 라우팅 업데이트 정보에 S/M 포함된다.
+classful
+ - 라우팅 업데이트 정보에 S/M 포함되지 않는다.
+ .IP add class로만 구분.
+ . subnetting VLSM을 사용하여 구축한 환경에서 사용 못함.
+ . CIDR 기능을 지원 X
+ 
+
+
+
+<전체 정보를 주기적으로 업데이트>
+split-horizon
+auto summary - 
+
+distance vector
+rip - 거리와 방향만 !!
+eigrp triggered 업데이트 - 변경사항만적용!
+
+
+
+
+update
+packet sending receive
+
+
+
+내가 가진 네트워크를 업데이트 하겠다
+network 
+
+udp 520 rip
+
+
+
+passive -interface : packet sending receive 안한다!! | 업데이트는 한다.
+
+
+advertise
+
+
+
