@@ -1,0 +1,151 @@
+    # FRSW
+no ip routing
+!
+frame-relay switching
+!
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+ frame-relay intf-type dce
+ clock rate 1612800
+ frame-relay route 102 interface serial 1/1 201
+ frame-relay route 103 interface serial 1/2 301
+!
+interface serial 1/1
+ no shutdown
+ encapsulation frame-relay
+ frame-relay intf-type dce
+ clock rate 1612800
+ frame-relay route 201 interface serial 1/0 102
+ frame-relay route 204 interface serial 1/3 402
+!
+interface serial 1/2
+ no shutdown
+ encapsulation frame-relay
+ frame-relay intf-type dce
+ clock rate 1612800
+ frame-relay route 301 interface serial 1/0 103
+ frame-relay route 305 interface serial 0/0 502
+!
+interface serial 1/3
+ no shutdown
+ encapsulation frame-relay
+ frame-relay intf-type dce
+ clock rate 1612800
+ frame-relay route 402 interface serial 1/1 204
+ frame-relay route 405 interface serial 0/0 504
+ frame-relay route 406 interface serial 0/1 604
+!
+interface serial 0/0
+ no shutdown
+ encapsulation frame-relay
+ frame-relay intf-type dce
+ clock rate 1612800
+ frame-relay route 503 interface serial 1/2 305
+ frame-relay route 504 interface serial 1/3 405
+ frame-relay route 506 interface serial 0/1 605
+!
+interface serial 0/1
+ no shutdown
+ encapsulation frame-relay
+ frame-relay intf-type dce
+ clock rate 1612800
+ frame-relay route 604 interface serial 1/3 406
+ frame-relay route 606 interface serial 0/0 606
+!
+
+    # R1
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+!
+interface serial 1/0.123 multipoint
+ frame-relay map ip 192.168.100.2 102
+ frame-relay map ip 192.168.100.3 103
+ ip address 192.168.100.1  255.255.255.0
+!
+
+    # R2
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+!
+interface serial 1/0.123 multipoint
+ frame-relay map ip 192.168.100.1 201
+ frame-relay map ip 192.168.100.3 201
+ ip address 192.168.100.2  255.255.255.0
+!
+interface serial 1/0.24 point-to-point
+ frame-relay interface-dlci 204
+ ip address 192.168.24.2  255.255.255.0
+!
+
+    # R3
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+!
+interface serial 1/0.123 multipoint
+ frame-relay map ip 192.168.100.1 301
+ frame-relay map ip 192.168.100.2 301
+ ip address 192.168.100.3  255.255.255.0
+!
+interface serial 1/0.35 point-to-point
+ frame-relay interface-dlci 305
+ ip address 192.168.35.3  255.255.255.0
+!
+
+    # R4
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+!
+interface serial 1/0.456 multipoint
+ frame-relay map ip 192.168.200.5 405
+ frame-relay map ip 192.168.200.6 406
+ ip address 192.168.200.4  255.255.255.0
+!
+interface serial 1/0.24 point-to-point
+ frame-relay interface-dlci 402
+ ip address 192.168.24.4  255.255.255.0
+!
+
+    # R5
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+!
+interface serial 1/0.456 multipoint
+ frame-relay map ip 192.168.200.4 504
+ frame-relay map ip 192.168.200.6 506
+ ip address 192.168.200.5  255.255.255.0
+!
+interface serial 1/0.35 point-to-point
+ frame-relay interface-dlci 503
+ ip address 192.168.35.5  255.255.255.0
+!
+
+    # R6
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+!
+interface serial 1/0.123 multipoint
+ frame-relay map ip 192.168.200.4 604
+ frame-relay map ip 192.168.200.5 605
+ ip address 192.168.200.6  255.255.255.0
+!
+
+
+
+
+
+
+
+
+
+
+
+
+
+

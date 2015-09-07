@@ -1,0 +1,290 @@
+   # R1
+
+en
+conf t
+!
+no ip domain-lookup
+!
+enable secret cisco
+!
+hostname R1
+!
+line con 0
+ logging syn
+ exec-timeout 0 0
+ password cisco
+ login
+!
+line vty 0 4
+ password cisco
+ login
+!
+int lo 0 
+ ip add 13.13.1.1 255.255.255.0
+!
+int fa0/0
+ ip add 150.1.13.1 255.255.255.0
+ no shutdown
+!
+int fa0/1
+ ip add 13.13.11.1 255.255.255.0
+ no shutdown
+!
+int s1/0
+ ip add 13.13.9.1 255.255.255.0
+ encapsulation frame-relay
+ no frame-relay inverse-arp
+ frame-relay map ip 13.13.9.2 102 broadcast
+ frame-relay map ip 13.13.9.3 102 broadcast
+ no shutdown
+!
+int s1/1
+ ip add 13.13.10.1 255.255.255.0
+ encapsulation frame-relay
+ no frame-relay inverse-arp
+ frame-relay map ip 13.13.10.3 113 broadcast
+ ip split-horizon
+ no shutdown
+!
+router rip
+ version 2
+ no auto-summary
+ network 13.0.0.0
+ network 150.1.0.0
+ end
+!
+
+
+   # R2
+
+en
+conf t
+!
+no ip domain-lookup
+!
+enable secret cisco
+!
+hostname R2
+!
+line con 0
+ logging syn
+ exec-timeout 0 0
+ password cisco
+ login
+!
+line vty 0 4
+ password cisco
+ login
+!
+int lo 0 
+ ip add 13.13.2.2 255.255.255.0
+!
+int lo 1
+ ip add 10.1.1.1 255.255.255.0
+ ip add 172.16.1.1 255.255.255.0 secondary
+ ip add 192.168.1.1 255.255.255.0 secondary
+!
+int lo 197
+ ip add 197.68.1.254 255.255.255.0
+ ip add 197.68.4.254 255.255.255.0 secondary
+ ip add 197.68.21.254 255.255.255.0 secondary
+ ip add 197.68.22.254 255.255.255.0 secondary
+ ip add 197.68.5.254 255.255.255.0 secondary
+ ip add 197.68.2.254 255.255.255.0 secondary
+ ip add 197.68.3.254 255.255.255.0 secondary
+!
+int fa0/1
+ ip add 13.13.12.2 255.255.255.0
+ no shutdown
+!
+int s1/0
+ encapsulation frame-relay
+ no frame-relay inverse-arp
+ no shutdown
+!
+int s1/0.123 multipoint
+ ip add 13.13.9.2 255.255.255.0
+ frame-relay map ip 13.13.9.1 201 broadcast
+ frame-relay map ip 13.13.9.3 203 broadcast
+ no ip split-horizon
+!
+router rip
+ version 2
+ no auto-summary
+ network 13.0.0.0
+ network 150.1.0.0
+!
+router bgp 13
+ bgp router-id 13.13.2.2
+ neighbor 13.13.1.1 remote-as 113
+ neighbor 13.13.1.1 update-source lo 0
+ neighbor 13.13.1.1 ebgp-multihop 3
+ neighbor 13.13.1.1 route-map COM out
+ neighbor 13.13.1.1 send-community
+ neighbor 13.13.3.3 remote-as 113
+ neighbor 13.13.3.3 update-source lo 0
+ neighbor 13.13.3.3 ebgp-multihop 3
+ neighbor 13.13.3.3 route-map COM out
+ neighbor 13.13.3.3 send-community
+ network 10.1.1.0 mask 255.255.255.0
+ network 172.16.1.0 mask 255.255.255.0
+ network 192.168.1.0
+ network 197.68.1.0
+ network 197.68.2.0
+ network 197.68.3.0
+ network 197.68.4.0
+ network 197.68.5.0
+ network 197.68.21.0
+ network 197.68.22.0
+!
+route-map COM permit 10
+ match ip address prefix-list RFC1918
+ set community 13:1918
+!
+route-map COM permit 20
+ match ip address prefix-list NET197
+ set community 13:197
+!
+route-map COM permit 30
+!
+ip bgp-community new-format
+!
+ip prefix-list RFC1918 permit 10.0.0.0/8 le 32
+ip prefix-list RFC1918 permit 172.16.0.0/12 le 32
+ip prefix-list RFC1918 permit 192.168.0.0/16 le 32
+!
+ip prefix-list NET197 permit 197.68.0.0/16 le 32
+!
+
+
+   # R3
+
+en
+conf t
+!
+no ip domain-lookup
+!
+enable secret cisco
+!
+hostname R3
+!
+line con 0
+ logging syn
+ exec-timeout 0 0
+ password cisco
+ login
+!
+line vty 0 4
+ password cisco
+ login
+!
+int lo 0 
+ ip add 13.13.3.3 255.255.255.0
+!
+int fa0/0
+ ip add 150.3.13.1 255.255.255.0
+ no shutdown
+!
+int fa0/1
+ ip add 13.13.13.3 255.255.255.0
+ no shutdown
+!
+int s1/0
+ ip add 13.13.9.3 255.255.255.0
+ encapsulation frame-relay
+ no frame-relay inverse-arp
+ frame-relay map ip 13.13.9.2 302 broadcast
+ frame-relay map ip 13.13.9.1 302 broadcast
+ no shutdown
+!
+int s1/1
+ ip add 13.13.10.3 255.255.255.0
+ encapsulation frame-relay
+ no frame-relay inverse-arp
+ frame-relay map ip 13.13.10.1 311 broadcast
+ ip split-horizon
+ no shutdown
+!
+router rip
+ version 2
+ no auto-summary
+ network 13.0.0.0
+ network 150.3.0.0
+ end
+!
+
+
+   # R4
+
+en
+conf t
+!
+no ip domain-lookup
+!
+hostname R4
+!
+line con 0
+ logging syn
+ exec-timeout 0 0
+ password cisco
+ login
+!
+line vty 0 4
+ password cisco
+ login
+!
+int lo 0 
+ ip add 13.13.4.4 255.255.255.0
+!
+int fa0/0
+ ip address 150.1.13.254 255.255.255.0
+ no shutdown
+!
+router rip
+ version 2
+ no auto-summary
+ network 13.0.0.0
+ network 150.1.0.0
+ end
+!
+
+
+
+   # R5
+
+en
+conf t
+!
+no ip domain-lookup
+!
+hostname R5
+!
+line con 0
+ logging syn
+ exec-timeout 0 0
+ password cisco
+ login
+!
+line vty 0 4
+ password cisco
+ login
+!
+int lo 0 
+ ip add 13.13.5.5 255.255.255.0
+!
+int lo 1
+ ip add 55.55.55.55 255.255.255.255
+!
+int fa0/0
+ ip add 150.3.13.254 255.255.255.0
+ no shutdown
+!
+router rip
+ version 2
+ no auto-summary
+ network 13.0.0.0
+ network 150.3.0.0
+ end
+!
+
+

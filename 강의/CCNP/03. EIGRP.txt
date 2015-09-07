@@ -1,0 +1,351 @@
+     # R1
+interface loopback 0
+ ip address 13.13.1.1  255.255.255.0
+!
+interface fastethernet 0/1
+ no shutdown
+ ip address 13.13.11.1  255.255.255.0
+!
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+ no frame-relay inverse-arp
+ frame-relay map ip 13.13.9.2 102 broadcast
+ frame-relay map ip 13.13.9.3 102 broadcast
+ ip address 13.13.9.1  255.255.255.0
+!
+
+     # R2
+interface loopback 0
+ ip address 13.13.2.2  255.255.255.0
+!
+interface fastethernet 0/1
+ no shutdown
+ ip address 13.13.12.2  255.255.255.0
+!
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+ no frame-relay inverse-arp
+!
+interface serial 1/0.123 multipoint
+ frame-relay map ip 13.13.9.1 201 broadcast
+ frame-relay map ip 13.13.9.3 203 broadcast
+ ip address 13.13.9.2  255.255.255.0
+!
+
+     # R3
+interface loopback 0
+ ip address 13.13.3.3  255.255.255.0
+!
+interface fastethernet 0/1
+ no shutdown
+ ip address 13.13.13.3  255.255.255.0
+!
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+ no frame-relay inverse-arp
+ frame-relay map ip 13.13.9.1 302 broadcast
+ frame-relay map ip 13.13.9.2 302 broadcast
+ ip address 13.13.9.3  255.255.255.0
+!
+
+           정보 확인
+
+R1# show ip route
+     13.0.0.0/24 is subnetted, 3 subnets
+C       13.13.1.0 is directly connected, Loopback0
+C       13.13.9.0 is directly connected, Serial1/0
+C       13.13.11.0 is directly connected, FastEthernet0/1
+R1# ping 13.13.9.2
+R1# ping 13.13.9.3
+
+R2# show ip route
+     13.0.0.0/24 is subnetted, 3 subnets
+C       13.13.2.0 is directly connected, Loopback0
+C       13.13.9.0 is directly connected, Serial1/0
+C       13.13.12.0 is directly connected, FastEthernet0/1
+R2# ping 13.13.9.1
+R2# ping 13.13.9.3
+
+R3# show ip route
+     13.0.0.0/24 is subnetted, 3 subnets
+C       13.13.3.0 is directly connected, Loopback0
+C       13.13.9.0 is directly connected, Serial1/0
+C       13.13.13.0 is directly connected, FastEthernet0/1
+R3# ping 13.13.9.1
+R3# ping 13.13.9.2
+
+
+
+
+
+     # R1
+interface serial 1/1
+ no shutdown
+ encapsulation frame-relay
+ no frame-relay inverse-arp
+ frame-relay map ip 13.13.10.3 113 broadcast
+ ip address 13.13.10.1  255.255.255.0
+!
+
+
+     # R3
+interface serial 1/1
+ no shutdown
+ encapsulation frame-relay
+ no frame-relay inverse-arp
+ frame-relay map ip 13.13.10.1 311 broadcast
+ ip address 13.13.10.3  255.255.255.0
+!
+
+            정보 확인
+
+R1# show ip route
+     13.0.0.0/24 is subnetted, 4 subnets
+C       13.13.1.0 is directly connected, Loopback0
+C       13.13.9.0 is directly connected, Serial1/0
+C       13.13.10.0 is directly connected, Serial1/1
+C       13.13.11.0 is directly connected, FastEthernet0/1
+R1# ping 13.13.10.3
+
+
+R3# show ip route
+     13.0.0.0/24 is subnetted, 4 subnets
+C       13.13.3.0 is directly connected, Loopback0
+C       13.13.9.0 is directly connected, Serial1/0
+C       13.13.10.0 is directly connected, Serial1/1
+C       13.13.13.0 is directly connected, FastEthernet0/1
+R3# ping 13.13.10.1
+
+
+
+     # R1
+interface fastethernet 0/0
+ no shutdown
+ ip address 150.1.13.1  255.255.255.0
+!
+
+     # R4
+interface loopback 0
+ ip address 13.13.4.4  255.255.255.0
+!
+interface fastethernet 0/1
+ no shutdown
+ ip address 13.13.14.4  255.255.255.0
+!
+interface fastethernet 0/0
+ no shutdown
+ ip address 150.1.13.254  255.255.255.0
+!
+
+           정보 확인
+
+R1# show ip route
+     13.0.0.0/24 is subnetted, 4 subnets
+C       13.13.1.0 is directly connected, Loopback0
+C       13.13.9.0 is directly connected, Serial1/0
+C       13.13.10.0 is directly connected, Serial1/1
+C       13.13.11.0 is directly connected, FastEthernet0/1
+     150.1.0.0/24 is subnetted, 1 subnets
+C       150.1.13.0 is directly connected, FastEthernet0/0
+R1# ping 150.1.13.254
+
+
+R4# show ip route
+     13.0.0.0/24 is subnetted, 2 subnets
+C       13.13.4.0 is directly connected, Loopback0
+C       13.13.14.0 is directly connected, FastEthernet0/1
+     150.1.0.0/24 is subnetted, 1 subnets
+C       150.1.13.0 is directly connected, FastEthernet0/0
+R4# ping 150.1.13.1
+
+
+
+
+
+     # R3
+interface fastethernet 0/0
+ no shutdown
+ ip address 150.3.13.1  255.255.255.0
+!
+
+     # R5
+interface loopback 0
+ ip address 13.13.5.5  255.255.255.0
+!
+interface fastethernet 0/1
+ no shutdown
+ ip address 13.13.15.5  255.255.255.0
+!
+interface fastethernet 0/0
+ no shutdown
+ ip address 150.3.13.254  255.255.255.0
+!
+
+           정보 확인
+
+R3# show ip route
+     13.0.0.0/24 is subnetted, 4 subnets
+C       13.13.3.0 is directly connected, Loopback0
+C       13.13.9.0 is directly connected, Serial1/0
+C       13.13.10.0 is directly connected, Serial1/1
+C       13.13.13.0 is directly connected, FastEthernet0/1
+     150.3.0.0/24 is subnetted, 1 subnets
+C       150.3.13.0 is directly connected, FastEthernet0/0
+R3# ping 150.3.13.254
+
+
+R5# show ip route
+     13.0.0.0/24 is subnetted, 2 subnets
+C       13.13.5.0 is directly connected, Loopback0
+C       13.13.15.0 is directly connected, FastEthernet0/1
+     150.3.0.0/24 is subnetted, 1 subnets
+C       150.3.13.0 is directly connected, FastEthernet0/0
+R5# ping 150.5.13.254
+
+
+
+
+==================================================================================================================
+
+EX) EIGRP Routing Protocol을 사용하여 모드 네트워크 구간에서 통신되도록 설정하시오
+ .AS = 100 , 자동 요약 기능은 사용하지 않는다.
+ .EIGRP 라우팅 업데이트가 필요한 Interface로만 EIGRP Packet이 송신되어야 한다.
+
+      # R1
+router eigrp 100
+ no auto-summary
+ network 13.13.1.0  0.0.0.255
+ network 13.13.9.0  0.0.0.255
+ network 13.13.10.0  0.0.0.255
+ network 13.13.11.0  0.0.0.255
+ network 150.1.13.0  0.0.0.255
+ passive-interface default
+ no passive-interface serial 1/0
+ no passive-interface serial 1/1
+ no passive-interface fastethernet 0/0
+!
+
+      # R2
+router eigrp 100
+ no auto-summary
+ network 13.13.2.0  0.0.0.255
+ network 13.13.9.0  0.0.0.255
+ network 13.13.12.0  0.0.0.255
+ passive-interface default
+ no passive-interface serial 1/0
+ no passive-interface serial 1/1
+ no passive-interface fastethernet 0/0
+!
+
+      # R3
+router eigrp 100
+ no auto-summary
+ network 13.13.3.0  0.0.0.255
+ network 13.13.9.0  0.0.0.255
+ network 13.13.10.0  0.0.0.255
+ network 13.13.13.0  0.0.0.255
+ network 150.3.13.0  0.0.0.255
+ passive-interface default
+ no passive-interface serial 1/0
+ no passive-interface serial 1/1
+ no passive-interface fastethernet 0/0
+!
+
+      # R4
+router eigrp 100
+ no auto-summary
+ network 13.13.4.0  0.0.0.255
+ network 13.13.14.0  0.0.0.255
+ network 150.1.13.0  0.0.0.255
+ passive-interface default
+ no passive-interface fastethernet 0/0
+!
+
+      # R5
+router eigrp 100
+ no auto-summary
+ network 13.13.5.0  0.0.0.255
+ network 13.13.15.0  0.0.0.255
+ network 150.3.13.0  0.0.0.255
+ passive-interface default
+ no passive-interface fastethernet 0/0
+!
+
+            정보 확인
+
+R1~5# show ip route
+R1~5# show ip route eigrp
+R1~5# show ip eigrp neighbor
+R1~5# show ip eigrp topology
+R1~5# show ip protocol
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

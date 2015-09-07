@@ -1,0 +1,455 @@
+                                              [글꼴 = 바탕 , 굵게 , 크기 = 14]
+
+-라우팅(Routing)
+ .통신 장비	: Router
+ .통신 Protocol	: IP (Internet Protocol)
+ .통신 주소	: IP address
+ .데이터 단위 	: 패켓(Packet)
+ .데이터가 입력되면 Layer 3 Header (IP Header)에 포함된 목적지 IP 주소를 근거로 Routing Table을 참조하여 전송한다.
+
+
+-스위칭(Switching) - LAN
+ .통신 장비	: Switch
+ .통신 Protocol	: Ethernet
+ .통신 주소	: Mac-address 
+ .데이터 단위 	: 프레임(Frame)
+ .데이터가 입력되면 Layer 2 Header (Ethernet Header)에 포함된 목적지 Mac-address를 근거로 
+   Mac-address-Table을 참조하여 전송한다.
+
+
+==================================================================================================================
+
+                                                   ### WAN구간 Layer 2 Protocol
+
+-Router와 Router연결 구간 WAN을 연결 및 통신시 사용되는 Protocol
+ .EX) PPP , HDLC , Frame-relay 등.....
+
+
+
+
+                             ## Frame-Relay 서비스
+
+-Router와  Ruter간 Connected 연결 및 통신시 사용되는 Protocol이며
+  WAN 구간에서 Frame-relay Switch를 사용하여 고속 Swtiching을 통해 데이터를 전송하는 서비스
+
+-장점 
+-전용 회선과 동일한 전송 보장 서비스를 받을 수 있으며, 대신 전용 회선에 비해서 비용이 저렴하다.
+-Layer 2 계층 Switching 서비스를 실시하기 때문에 고속능 서비스 구현이 가능하다.
+-하나의 인터페이스 및 연결을 이용하여 Multi-access가 가능하다.
+  [EX : 여러개의 지사(지점)이 위치해 있는 회사]
+
+-단점 
+ .다수의 사용자가 공동으로 사용하기때문에 보안에는 취약하며
+  동시에 통신을 사용하게되면 신뢰적인 대역폭을 사용할수는 없다.
+
+-Frame-relay는 DLCI라는 식별자 Code를 사용하여 통신을 실시한다. (주소체계)
+
+
+-Frame-relay Virtua Circuit을 생성하여 통신을 실시
+ .Frame-relay간 가상의 연결을 VC(Virtua Circuit)라고 한다.
+ .VC은 수동으로 연결를 실시한 PVC와 자동으로 통신을 실시하는 SVC로 구성이 가능하다.
+ .PVC (Permanent VC) : 영구적 가상회선으로 통신이 빈번히 일어나는 구간에서 효율적인 통신
+ .SVC (Switched VC)   : 교환식 가상회선으로 간혈적인 통신이 실시되는 구간에서 효율적인 통신
+
+
+-Frame-relay LMI (Local Management Interface)
+ .기본적인 프레임 릴레이 규격화된 종류로써 DLCI에 대한 상태를 관리하며 
+ .Cisco
+ .ANSI
+ .Q933A 3가지 Type으로 구성이 가능하다.
+
+interface serial 1/x
+ frame-relay lmi-type [cisco | ansi | q933a]
+!
+
+-Frame-relay Status
+ .Active	 : Frame-relay연결이 실시되었고 통신이 가능한 상태 (통신이 가능한 상태)
+ .Inactive	 : Local Router와 FR-SW연결이 실시되었지만 FR-SW와 Remote Router간 연결이 안되었을 경우
+ .Deleted	 : Frame-relay연결이 실시되지 않은상태 (L2 Protocol이 다른거나 LMI Type이 다른경우)
+
+
+
+
+=============================================================================================================================
+
+                                    [실습용 Frame-relay 물리 구성도]
+
+
+                                  -----------------------------------------------
+                                  |                               FRSW                                 |
+                                  -----------------------------------------------
+                                       |           |            |          |           |            |
+		           S1/0       S1/1       S1/2       S1/3       S0/0       S0/1
+                                       |           |            |          |           |            |
+                                       |           |            |          |           |            |
+                                       |           |            |          |           |            |
+                                       |           |            |          |           |            |
+                                       |           |            |          |           |            |
+                                       |           |            |          |           |            |
+		           S1/0      S1/0        S1/0       S1/0      S1/0       S1/0
+                                       |           |            |          |           |            |
+                              	R1	R2	R3	R4	R5	R6
+
+
+
+=============================================================================================================================
+
+                                       102                     192.168.10.0/24                       201
+                                       S1/0                    S1/0          S1/1                    S1/0
+                                  R1----------------------FRSW----------------------R2
+                                       103                         	|                                203
+					          S1/2
+						|
+						|
+					          S1/0
+					    301	|     302
+					            R3
+
+
+   # FR
+no ip routing    	<--- Routing기능 해제
+!
+frame-relay switching    <--- Frame-relay Switching기능 enable
+!
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay			    <--- L2 Protocol enable
+ frame-relay intf-type dce 			    <--- Frame-relay시 DCE로 동작
+ clock rate 1612800    			    <--- 대역폭에 따른 속도 지정 [B/W : 1544K]
+ frame-relay route 102  interface serial 1/1  201    <--- Frame-relay 경로 설정
+ frame-relay route 103  interface serial 1/2  301    <--- Frame-relay 경로 설정
+!
+interface serial 1/1
+ no shutdown
+ encapsulation frame-relay
+ frame-relay intf-type dce
+ clock rate 1612800
+ frame-relay route 201  interface serial 1/0  102
+ frame-relay route 203  interface serial 1/2  302
+!
+interface serial 1/2
+ no shutdown
+ encapsulation frame-relay
+ frame-relay intf-type dce
+ clock rate 1612800
+ frame-relay route 301  interface serial 1/0  103
+ frame-relay route 302  interface serial 1/1  203
+!
+
+
+     # R1
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+ frame-relay map ip 192.168.10.2  102
+ frame-relay map ip 192.168.10.3  103
+ ip address 192.168.10.1  255.255.255.0
+!
+
+
+     # R2
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+ frame-relay map ip 192.168.10.1  201
+ frame-relay map ip 192.168.10.3  203
+ ip address 192.168.10.2  255.255.255.0
+!
+
+
+    # R3
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+ frame-relay map ip 192.168.10.1  301
+ frame-relay map ip 192.168.10.2  302
+ ip address 192.168.10.3  255.255.255.0
+!
+
+          정보확인
+
+R1# show ip route
+C    192.168.10.0/24 is directly connected, Serial1/0
+R1# ping 192.168.10.2
+R1# ping 192.168.10.3
+
+
+R2# show ip route
+C    192.168.10.0/24 is directly connected, Serial1/0
+R2# ping 192.168.10.1
+R2# ping 192.168.10.3
+
+
+R3# show ip route
+C    192.168.10.0/24 is directly connected, Serial1/0
+R3# ping 192.168.10.1
+R3# ping 192.168.10.2
+
+
+R1/2/3# show frame-relay map	: Frame-relay VC 상태 확인
+R1/2/3# show frame-relay lmi	: Frame-relay LMI-Type 확인
+R1/2/3# show frame-relay pvc	: Frame-relay PVC 정보 확인
+
+
+FRSW# show frame-relay route
+Input Intf      Input Dlci      Output Intf     Output Dlci     Status
+Serial1/0       102             Serial1/1       201             	active
+Serial1/0       103             Serial1/2       301             	active
+Serial1/1       201             Serial1/0       102             	active
+Serial1/1       203             Serial1/2       302             	active
+Serial1/2       301             Serial1/0       103             	active
+Serial1/2       302             Serial1/1       203             	active
+
+
+
+   # Dynagen
+=> capture R1 s1/0 CCNP.cap FR	: L2 Protocol을 Frame-relay를 사용한경우
+=> capture R1 s1/0 CCNP.cap HDLC	: L2 Protocol을 HDLC를 사용한경우
+=> capture R1 s1/0 CCNP.cap PPP	: L2 Protocol을 PPP를 사용한경우
+=> capture R1 s1/0 CCNP.cap 	: L2 Protocol을 Ethernet을 사용한경우
+
+
+
+
+=============================================================================================================================
+
+
+                             ## Frame-relay Sub-interface
+
+-하나의 물리적 Interface를 다수의 논리적인 Interface로 분할하여 사용하는 기능
+  [Sub-interface는 VC단위로 생성이 가능하다.]
+
+-Sub-interface는 연결 구성에 따라 Point-to-point방식과 Multipoint 방식으로 생성이 가능하다.
+ .Point-to-point	: Router와 Router간 1:1로 연결하는 방식
+ .Multipoint	: 동일 네트워크 환경에 다수의 Router를 연결하는 방식 (Full-mash방식 , Hub&Spoke방식으로 구성가능)
+
+
+------------------------------------------------------------------------------------------------------------------
+
+                             ## Point-to-point
+
+-Point-to-point로 만들어진 Sub-interface들은 서로 다른 네트워크로 구성된다.
+
+                                  -----------------------------------------------
+                                  |                               FRSW                                 |
+                                  -----------------------------------------------
+                                       |           |            |          |           |            |
+		           S1/0       S1/1       S1/2       S1/3       S0/0       S0/1
+                                       |           |            |          |           |            |
+                                       |           |            |          |           |            |
+                                       |           |            |          |           |            |
+                                       |           |            |          |           |            |
+                                       |           |            |          |           |            |
+                                       |           |            |          |           |            |
+		           S1/0      S1/0        S1/0       S1/0      S1/0       S1/0
+                                       |           |            |          |           |            |
+                              	R1	R2	R3	R4	R5	R6
+
+
+
+                           102                              201     203                              302
+                       R1------------FR------------R2------------FR------------R3
+                                     192.168.12.0/24                       192.168.23.0/24
+
+
+   # FR
+no ip routing
+!
+frame-relay switching
+!
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+ frame-relay intf-type dce
+ clock rate 1612800
+ frame-relay route 102 interface serial 1/1 201
+ frame-relay route 103 interface serial 1/2 301
+!
+interface serial 1/1
+ no shutdown
+ encapsulation frame-relay
+ frame-relay intf-type dce
+ clock rate 1612800
+ frame-relay route 201 interface serial 1/0 102
+ frame-relay route 203 interface serial 1/2 302
+!
+interface serial 1/2
+ no shutdown
+ encapsulation frame-relay
+ frame-relay intf-type dce
+ clock rate 1612800
+ frame-relay route 301 interface serial 1/0 103
+ frame-relay route 302 interface serial 1/1 203
+!
+
+
+   # R1
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+!
+interface serial 1/0.12 point-to-point 
+ ip address 192.168.12.1 255.255.255.0
+ frame-relay interface-dlci 102
+!
+
+   # R2
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+!
+interface serial 1/0.12 point-to-point 
+ ip address 192.168.12.2 255.255.255.0
+ frame-relay interface-dlci 201
+!
+interface serial 1/0.23 point-to-point
+ ip address 192.168.23.2 255.255.255.0
+ frame-relay interface-dlci 203
+!
+
+   # R3
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+!
+interface serial 1/0.23 point-to-point
+ ip address 192.168.23.3 255.255.255.0
+ frame-relay interface-dlci 302
+!
+
+            정보확인
+
+Rx# show ip route
+Rx# show frame-relay map
+Rx# show frame-relay pvc
+Rx# show frame-relay lmi
+
+R1# ping 192.168.12.2
+
+R2# ping 192.168.12.1
+R2# ping 192.168.23.3
+
+R3# ping 192.168.23.2
+
+
+
+------------------------------------------------------------------------------------------------------------------
+
+                             ## Multipoint
+
+-하나의 Interface를 사용하여 동일 네트워크상으로 여러대의 장비를 연결하는 기능 (NBMA)
+  Frame-relay Multipoint는 Full-mash방식과 , Hub&spoke방식으로 구성이 가능하다.
+
+                                 102/---R1
+                               /	|
+                          /        103
+                     /	      	|
+      201      /		|
+  R2----			|
+      203      /		|
+                     /		|
+                          /        301
+                               /	|
+                                 302/---R3
+
+       ## Full-mash
+
+   # R1
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+!
+interface serial 1/0.123 multipoint
+ frame-relay map ip 192.168.12.2 102
+ frame-relay map ip 192.168.12.3 103
+ ip address 192.168.12.1 255.255.255.0
+!
+
+   # R2
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+!
+interface serial 1/0.123 multipoint
+ frame-relay map ip 192.168.12.1 201
+ frame-relay map ip 192.168.12.3 203
+ ip address 192.168.12.2 255.255.255.0
+!
+
+   # R3
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+!
+interface serial 1/0.123 multipoint
+ frame-relay map ip 192.168.12.1 301
+ frame-relay map ip 192.168.12.2 302
+ ip address 192.168.12.3 255.255.255.0
+!
+
+
+
+
+       ## Hub&Spoke
+
+                                 102/---R1
+                               /
+                          /
+                     /
+      201      /
+  R2----	
+      203      /
+                     /
+                          /
+                               /
+                                 302/---R3
+
+-R2가 Hub Router로 동작하며  R1 , R3이 Spoke Router로 동작
+
+   # R2 [Hub]
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+!
+interface serial 1/0.123 multipoint
+ ip address 192.168.10.2 255.255.255.0
+ frame-relay map ip 192.168.10.1 201
+ frame-relay map ip 192.168.10.3 203
+!
+
+   # R1 [Spoke]
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+!
+interface serial 1/0.123 multipoint
+ ip address 192.168.10.1  255.255.255.0
+ frame-relay map ip 192.168.10.2 102
+ frame-relay map ip 192.168.10.3 102
+!
+
+   # R3 [Spoke]
+interface serial 1/0
+ no shutdown
+ encapsulation frame-relay
+!
+interface serial 1/0.123 multipoint
+ ip address 192.168.10.3  255.255.255.0
+ frame-relay map ip 192.168.10.1 302
+ frame-relay map ip 192.168.10.2 302
+!
+
+         정보확인
+
+Rx# show ip route
+
+R1# ping 192.168.10.2
+R1# ping 192.168.10.3
+
+R2# ping 192.168.10.1
+R2# ping 192.168.10.3
+
+R3# ping 192.168.10.1
+R3# ping 192.168.10.2
+
+
