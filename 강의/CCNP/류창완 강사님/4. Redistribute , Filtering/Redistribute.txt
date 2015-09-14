@@ -1,0 +1,820 @@
+                                   ### Redistribute 실습 구성   [교재 152 Page참조]
+
+EX1-1) R1, R2 , R3 Frame-Realy 구간에 OSPF를 사용한 라우팅 업데이트를 실시하시오
+ .OSPF Process = 1 , Area = 0 , Router-ID = 13.13.X.X  (X = Router번호 , R1 = 13.13.1.1)
+ .R1, R2 , R3의 Loopback 0의 네트워크는 Area 0에 포함된다.
+ .OSPF 라우팅 업데이트가 필요한 Interface로만 OSPF Packet을 송신해야 한다.
+ .R2가 DR로 선출되며 BDR은 선출하지 않는다.
+
+     # R2
+interface serial 1/0.123
+ ip ospf priority 255
+!
+router ospf 1
+ router-id 13.13.2.2
+ passive-interface default
+ no passive-interface serial 1/0.123
+ network 13.13.2.0  0.0.0.255 area 0
+ network 13.13.9.0  0.0.0.255 area 0
+ neighbor 13.13.9.1
+ neighbor 13.13.9.3
+!
+
+     # R1
+interface serial 1/0
+ ip ospf priority 0
+!
+router ospf 1
+ router-id 13.13.1.1
+ passive-interface default
+ no passive-interface serial 1/0
+ network 13.13.1.0  0.0.0.255 area 0
+ network 13.13.9.0  0.0.0.255 area 0
+!
+
+     # R3
+interface serial 1/0
+ ip ospf priority 0
+!
+router ospf 1
+ router-id 13.13.3.3
+ passive-interface default
+ no passive-interface serial 1/0
+ network 13.13.3.0  0.0.0.255 area 0
+ network 13.13.9.0  0.0.0.255 area 0
+!
+
+        정보 확인
+
+R1# show ip ospf neighbor	[인접성 2개 확인]
+Neighbor ID     Pri   State           	Dead Time      Address       	Interface
+13.13.2.2       255   FULL/DR         	00:01:46       13.13.9.2 	Serial1/0
+
+R2# show ip ospf neighbor	[인접성 2개 확인]
+Neighbor ID     Pri   State           Dead Time   	      Address         	Interface
+13.13.1.1          0   FULL/DROTHER	00:01:39       13.13.9.1	Serial1/0.123
+13.13.3.3          0   FULL/DROTHER 	00:01:47       13.13.9.3 
+
+R3# show ip ospf neighbor	[인접성 2개 확인]
+Neighbor ID     Pri   State           	Dead Time      Address       	Interface
+13.13.2.2       255   FULL/DR         	00:01:45       13.13.9.2 	Serial1/0
+
+
+
+
+
+
+
+
+
+EX1-2) R1 , R3 Frame-Realy 구간에 OSPF를 사용한 라우팅 업데이트를 실시하시오
+ .OSPF Process = 1 , Area = 0 , DR , BDR은 선출하지 않는다.
+
+     # R1
+router ospf 1
+ network 13.13.10.0  0.0.0.255 area 0
+ no passive-interface serial 1/1
+!
+interface serial 1/1
+ ip ospf network point-to-point
+!
+
+        정보 확인
+
+     # R3
+router ospf 1
+ network 13.13.10.0  0.0.0.255 area 0
+ no passive-interface serial 1/1
+!
+interface serial 1/1
+ ip ospf network point-to-point
+!
+
+    # R1 , R2 , R3
+interface loopback 0
+ ip ospf network point-to-point
+!
+
+R1# show ip ospf neighbor	[인접성 2개 확인]
+Neighbor ID     Pri   State           	Dead Time      Address       	Interface
+13.13.3.3          0   FULL/  -	00:00:37       13.13.10.3	Serial1/1
+13.13.2.2       255   FULL/DR         	00:01:46       13.13.9.2 	Serial1/0
+
+R2# show ip ospf neighbor	[인접성 2개 확인]
+Neighbor ID     Pri   State           Dead Time   	      Address         	Interface
+13.13.1.1          0   FULL/DROTHER	00:01:39       13.13.9.1	Serial1/0.123
+13.13.3.3          0   FULL/DROTHER 	00:01:47       13.13.9.3 
+
+R3# show ip ospf neighbor	[인접성 2개 확인]
+Neighbor ID     Pri   State           	Dead Time      Address       	Interface
+13.13.1.1          0   FULL/  -        	00:00:37       13.13.10.1    	Serial1/1
+13.13.2.2       255   FULL/DR         	00:01:45       13.13.9.2 
+
+
+
+
+
+=============================================================================================================================
+
+                  ### R1 , R4  RIPv2구간 IGP 구성
+
+-R1 , R4구간에서 RIPv2 Routing Protocol을 사용하여 라우팅 업데이트를 실시
+ .자동 요약기능은 사용하지 않는다.
+ .RIPv2라우팅 업데이트가 필요한 Interface로만 RIPv2 Packet이 송신되어야 한다.
+ .R4에서는 RIPv2설정이 완료된상태이다.
+
+    # R1
+router rip
+ version 2
+ no auto-summary
+ passive-interface default
+ no passive-interface fastethernet 0/0
+ network 13.0.0.0
+ network 150.1.0.0
+!
+
+       정보 확인
+
+R1# show ip route rip
+R    199.172.11.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.10.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.9.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.8.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.15.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.14.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.13.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.12.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.3.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.2.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.1.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.16.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.7.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.6.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+     13.0.0.0/24 is subnetted, 8 subnets
+R       13.13.4.0 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R       13.13.14.0 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.5.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+     150.100.0.0/24 is subnetted, 1 subnets
+R       150.100.1.0 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.4.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+
+
+
+
+
+
+
+
+
+
+
+
+=============================================================================================================================
+
+
+                  ### R3 , R5 EIGRP 구간 IGP 구성
+
+-R3 , R5구간에서 EIGRP Routing Protocol을 사용하여 라우팅 업데이트를 실시
+ .AS = 100 , 자동 요약기능은 사용하지 않는다.
+ .R3의 FastEthernet 0/1 네트워크는 EIGRP에 포함되어야 한다.
+ .EIGRP 라우팅 업데이트가 필요한 Interface로만 EIGRP Packet이 송신되어야 한다.
+ .R5에서는 EIGRP설정이 완료된상태이다.
+
+    # R3
+router eigrp 100
+ no auto-summary
+ passive-interface default
+ no passive-interface fastethernet 0/0
+ network 13.13.13.0  0.0.0.255
+ network 150.3.13.0  0.0.0.255
+!
+
+        정보 확인
+
+R3# show ip route eigrp
+     4.0.0.0/24 is subnetted, 1 subnets
+D       4.1.1.0 [90/409600] via 150.3.13.254, 00:00:00, FastEthernet0/0
+     128.28.0.0/24 is subnetted, 1 subnets
+D       128.28.2.0 [90/409600] via 150.3.13.254, 00:00:00, FastEthernet0/0
+     128.128.0.0/24 is subnetted, 1 subnets
+D       128.128.1.0 [90/409600] via 150.3.13.254, 00:00:00, FastEthernet0/0
+D    198.2.3.0/24 [90/409600] via 150.3.13.254, 00:00:00, FastEthernet0/0
+     198.1.1.0/30 is subnetted, 1 subnets
+D       198.1.1.4 [90/409600] via 150.3.13.254, 00:00:00, FastEthernet0/0
+D    198.2.1.0/24 [90/409600] via 150.3.13.254, 00:00:00, FastEthernet0/0
+D    198.198.1.0/24 [90/409600] via 150.3.13.254, 00:00:00, FastEthernet0/0
+D    198.198.22.0/24 [90/409600] via 150.3.13.254, 00:00:00, FastEthernet0/0
+     13.0.0.0/24 is subnetted, 7 subnets
+D       13.13.5.0 [90/409600] via 150.3.13.254, 00:00:00, FastEthernet0/0
+D    198.198.4.0/24 [90/409600] via 150.3.13.254, 00:00:00, FastEthernet0/0
+D    198.198.21.0/24 [90/409600] via 150.3.13.254, 00:00:00, FastEthernet0/0
+D    198.2.5.0/24 [90/409600] via 150.3.13.254, 00:00:00, FastEthernet0/0
+D    198.198.5.0/24 [90/409600] via 150.3.13.254, 00:00:00, FastEthernet0/0
+
+
+
+
+=============================================================================================================================
+
+                                                  ### 경로 Filtering
+
+-Distribute-list
+ : Routing Protocol을 사용하여 네트워크 정보를 업데이트시 List를 구성하여 정된 네트워크 정보만 라우팅 업데이트하거나
+   특정 네트워크 정보를 제외한 나머지 네트워크 정보만 라우팅 업데이트하는 기능
+
+
+
+
+EX1) R1은 R4로부터 수신하는 RIPv2 정보중 "199.172.1.0/24 ~ 199.172.7.0/24" 네트워크 정보만 수신해야 한다.
+
+-199.172.00000 001.00000000
+-199.172.00000 010.00000000
+-199.172.00000 011.00000000
+-199.172.00000 100.00000000
+-199.172.00000 101.00000000
+-199.172.00000 110.00000000
+-199.172.00000 111.11111111
+-------------------------
+-  0 .  0 .00000 111.11111111 = 199.172.0.0  0.0.7.255
+
+
+    # R1
+access-list 1 permit 199.172.0.0  0.0.7.255
+!
+router rip
+ distribute-list 1 in fastethernet 0/0
+!
+
+        정보 확인
+
+R1# show ip route rip     [Distribute-list 설정 전]
+R    199.172.11.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.10.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.9.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.8.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.15.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.14.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.13.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.12.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.3.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.2.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.1.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.16.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.7.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.6.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+      13.0.0.0/24 is subnetted, 8 subnets
+R         13.13.4.0 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R         13.13.14.0 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.5.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+      150.100.0.0/24 is subnetted, 1 subnets
+R         150.100.1.0 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+R    199.172.4.0/24 [120/1] via 150.1.13.254, 00:00:03, FastEthernet0/0
+
+
+R1# show ip route rip     [Distribute-list 설정 후]
+R    199.172.3.0/24 [120/1] via 150.1.13.254, 00:00:01, FastEthernet0/0
+R    199.172.2.0/24 [120/1] via 150.1.13.254, 00:00:01, FastEthernet0/0
+R    199.172.1.0/24 [120/1] via 150.1.13.254, 00:00:01, FastEthernet0/0
+R    199.172.7.0/24 [120/1] via 150.1.13.254, 00:00:02, FastEthernet0/0
+R    199.172.6.0/24 [120/1] via 150.1.13.254, 00:00:02, FastEthernet0/0
+R    199.172.5.0/24 [120/1] via 150.1.13.254, 00:00:02, FastEthernet0/0
+R    199.172.4.0/24 [120/1] via 150.1.13.254, 00:00:02, FastEthernet0/0
+
+
+                  ### 정보 확인후 Distribute-list 삭제
+
+
+    # R1
+no access-list 1
+!
+router rip
+ no distribute-list 1 in fastethernet 0/0
+!
+
+
+
+
+
+
+
+
+
+EX2) R1은 R4로부터 수신하는 RIPv2 네트워크 정보중 
+       "199.172.4.0/24 ~ 199.172.7.0/24" 네트워크를 제외한 나머지 네트워크 정보만 수신해야 한다.
+
+
+    # R1
+access-list 2 deny 199.172.4.0  0.0.3.255
+access-list 2 permit any
+!
+router rip
+ distribute-list 2 in fastethernet 0/0
+!
+
+         정보 확인
+
+R1# show ip route rip
+R    199.172.1.0/24 [120/1] via 150.1.13.254, 00:00:04, FastEthernet0/0
+R    199.172.2.0/24 [120/1] via 150.1.13.254, 00:00:04, FastEthernet0/0
+R    199.172.3.0/24 [120/1] via 150.1.13.254, 00:00:04, FastEthernet0/0
+R    199.172.8.0/24 [120/1] via 150.1.13.254, 00:00:04, FastEthernet0/0
+R    199.172.9.0/24 [120/1] via 150.1.13.254, 00:00:04, FastEthernet0/0
+R    199.172.10.0/24 [120/1] via 150.1.13.254, 00:00:04, FastEthernet0/0
+R    199.172.11.0/24 [120/1] via 150.1.13.254, 00:00:04, FastEthernet0/0
+R    199.172.12.0/24 [120/1] via 150.1.13.254, 00:00:04, FastEthernet0/0
+R    199.172.13.0/24 [120/1] via 150.1.13.254, 00:00:04, FastEthernet0/0
+R    199.172.14.0/24 [120/1] via 150.1.13.254, 00:00:04, FastEthernet0/0
+R    199.172.15.0/24 [120/1] via 150.1.13.254, 00:00:04, FastEthernet0/0
+R    199.172.16.0/24 [120/1] via 150.1.13.254, 00:00:04, FastEthernet0/0
+      13.0.0.0/24 is subnetted, 8 subnets
+R         13.13.4.0 [120/1] via 150.1.13.254, 00:00:04, FastEthernet0/0
+R         13.13.14.0 [120/1] via 150.1.13.254, 00:00:04, FastEthernet0/0
+      150.100.0.0/24 is subnetted, 1 subnets
+R         150.100.1.0 [120/1] via 150.1.13.254, 00:00:04, FastEthernet0/0
+
+
+
+
+
+                  ### 정보 확인후 Distribute-list 삭제
+
+    # R1
+no access-list 2
+!
+router rip
+ no distribute-list 2 in fastethernet 0/0
+!
+
+
+
+
+
+
+==================================================================================================================
+
+
+
+                                       ## Redistribute
+
+-특정 Routing Protocol로 수신한 네트워크 정보를 다른 Routing Protocol 환경으로 라우팅하는 기능
+
+-서로 다른 Routing Protocol간 라우팅 업데이트를 실시하기 위해서는 Metric값을 동기화 해야한다.
+
+
+
+
+
+
+                            ## Connecte 재분배
+
+-Routing Table에 Connecte로 등록된 네트워크 정보를 재 분배를 사용하여 라우팅 업데이트 하는 기능
+
+EX1-1) R2는 FastEthernet 0/1에 할당된 "13.13.12.0/24" 네트워크 정보를 OSPF환경으로 재분배해야 한다.
+          [이때 Metric값은 고정되어야 한다.]
+
+-O E1  : External Metric-type 1이며 외부 Protocol 정보가 OSPF 환경으로 재 분배된 네트워크 정보 (누적 Metric)
+-O E2  : External Metric-type 2이며 외부 Protocol 정보가 OSPF 환경으로 재 분배된 네트워크 정보 (고정 Metric)
+
+    # R2
+router ospf 1
+ redistribute connecte metric-type 2 subnet
+!
+
+          정보 확인
+
+R1# show ip route ospf
+        13.0.0.0/24 is subnetted, 9 subnets
+O       	13.13.2.0 [110/65] via 13.13.9.2, 00:00:03, Serial1/0
+O       	13.13.3.0 [110/65] via 13.13.10.3, 00:00:03, Serial1/1
+                         [110/65] via 13.13.9.3, 00:00:03, Serial1/0
+O E2    	13.13.12.0 [110/20] via 13.13.9.2, 00:00:03, Serial1/0
+
+
+R3# show ip route ospf
+        13.0.0.0/24 is subnetted, 7 subnets
+O       	13.13.1.0 [110/65] via 13.13.10.1, 00:00:06, Serial1/1
+                         [110/65] via 13.13.9.1, 00:00:06, Serial1/0
+O       	13.13.2.0 [110/65] via 13.13.9.2, 00:00:06, Serial1/0
+O E2    	13.13.12.0 [110/20] via 13.13.9.2, 00:00:06, Serial1/0
+
+
+
+EX1-2) 아래의 조건에 맞게 R2에서 설정하시오
+ .Loopback 100을 생성한후 "13.13.100.0/24" IP 주소를 할당하시오
+ .Loopback 200을 생성한후 "13.13.200.0/24" IP 주소를 할당하시오
+ .단 위의 네트워크 정보는 OSPF로 라우팅되지 않아야한다.
+
+   # R2
+interface loopback 100
+ ip address 13.13.100.2  255.255.255.0
+!
+interface loopback 200
+ ip address 13.13.200.2  255.255.255.0
+!
+route-map REDI_CONN permit 10
+ match interface fastethernet 0/1
+!
+router ospf 1
+ redistribute connecte metric-type 2 subnet  route-map REDI_CONN
+!
+
+         정보 확인
+
+R1# show ip route ospf
+        13.0.0.0/24 is subnetted, 11 subnets
+O       	13.13.2.0 [110/65] via 13.13.9.2, 00:09:13, Serial1/0
+O       	13.13.3.0 [110/65] via 13.13.10.3, 00:09:13, Serial1/1
+                         [110/65] via 13.13.9.3, 00:09:13, Serial1/0
+O E2    	13.13.12.0 [110/20] via 13.13.9.2, 00:09:13, Serial1/0
+O E2    	13.13.100.0 [110/20] via 13.13.9.2, 00:00:02, Serial1/0
+O E2    	13.13.200.0 [110/20] via 13.13.9.2, 00:00:02, Serial1/0
+
+
+R1# show ip route ospf
+        13.0.0.0/24 is subnetted, 9 subnets
+O       	13.13.2.0 [110/65] via 13.13.9.2, 00:10:48, Serial1/0
+O       	13.13.3.0 [110/65] via 13.13.10.3, 00:10:48, Serial1/1
+                         [110/65] via 13.13.9.3, 00:10:48, Serial1/0
+O E2    	13.13.12.0 [110/20] via 13.13.9.2, 00:10:48, Serial1/0
+
+
+
+
+
+
+=============================================================================================================================
+
+                       ## OSPF  --->  RIPv2
+
+-서로 다른 Routing Protocol간 재분배시 두가지 Protocol이 enable된 Router에서 재분배기능을 설정해야 한다.
+
+EX) R1은 OSPF에 포함된 네트워크 정보를 RIPv2환경으로 재분배를 실시해야 한다.
+
+
+     # R1
+router rip
+ redistribute ospf 1 metric 3
+!
+
+       정보 확인
+
+R4# show ip route rip
+     13.0.0.0/24 is subnetted, 6 subnets
+R       13.13.1.0 [120/1] via 150.1.13.1, 00:00:05, FastEthernet0/0
+R       13.13.9.0 [120/1] via 150.1.13.1, 00:00:05, FastEthernet0/0
+R       13.13.10.0 [120/1] via 150.1.13.1, 00:00:05, FastEthernet0/0
+R       13.13.11.0 [120/1] via 150.1.13.1, 00:00:05, FastEthernet0/0
+
+
+R4# show ip route rip
+     13.0.0.0/24 is subnetted, 9 subnets
+R       13.13.1.0 [120/1] via 150.1.13.1, 00:00:11, FastEthernet0/0
+R       13.13.2.0 [120/3] via 150.1.13.1, 00:00:01, FastEthernet0/0
+R       13.13.3.0 [120/3] via 150.1.13.1, 00:00:01, FastEthernet0/0
+R       13.13.9.0 [120/1] via 150.1.13.1, 00:00:11, FastEthernet0/0
+R       13.13.10.0 [120/1] via 150.1.13.1, 00:00:11, FastEthernet0/0
+R       13.13.11.0 [120/1] via 150.1.13.1, 00:00:11, FastEthernet0/0
+R       13.13.12.0 [120/3] via 150.1.13.1, 00:00:01, FastEthernet0/0
+
+
+
+
+
+=============================================================================================================================
+
+                       ## RIPv2  --->  OSPF
+
+EX) R1은 RIPv2에 포함된 네트워크 정보를 OSPF환경으로 재분배해야 한다.
+      [RIPv2가 OSPF환경으로 재분배시 Metetric값이 고정되어야 한다.]
+
+    # R1
+router ospf 1
+ redistribute rip metric-type 2 subnet
+!
+
+       정보 확인
+
+R2# show ip route ospf
+O E2  199.172.11.0/24 [110/20] via 13.13.9.1, 00:00:01, Serial1/0.123
+O E2  199.172.10.0/24 [110/20] via 13.13.9.1, 00:00:01, Serial1/0.123
+O E2  199.172.9.0/24 [110/20] via 13.13.9.1, 00:00:01, Serial1/0.123
+O E2  199.172.8.0/24 [110/20] via 13.13.9.1, 00:00:01, Serial1/0.123
+O E2  199.172.15.0/24 [110/20] via 13.13.9.1, 00:00:01, Serial1/0.123
+O E2  199.172.14.0/24 [110/20] via 13.13.9.1, 00:00:01, Serial1/0.123
+O E2  199.172.13.0/24 [110/20] via 13.13.9.1, 00:00:01, Serial1/0.123
+O E2  199.172.12.0/24 [110/20] via 13.13.9.1, 00:00:01, Serial1/0.123
+O E2  199.172.3.0/24 [110/20] via 13.13.9.1, 00:00:01, Serial1/0.123
+O E2  199.172.2.0/24 [110/20] via 13.13.9.1, 00:00:02, Serial1/0.123
+O E2  199.172.1.0/24 [110/20] via 13.13.9.1, 00:00:02, Serial1/0.123
+O E2  199.172.16.0/24 [110/20] via 13.13.9.1, 00:00:02, Serial1/0.123
+O E2  199.172.7.0/24 [110/20] via 13.13.9.1, 00:00:02, Serial1/0.123
+O E2  199.172.6.0/24 [110/20] via 13.13.9.1, 00:00:02, Serial1/0.123
+        13.0.0.0/24 is subnetted, 11 subnets
+O       	13.13.1.0 [110/65] via 13.13.9.1, 00:00:02, Serial1/0.123
+O       	13.13.3.0 [110/65] via 13.13.9.3, 00:00:02, Serial1/0.123
+O E2    	13.13.4.0 [110/20] via 13.13.9.1, 00:00:02, Serial1/0.123
+O       	13.13.10.0 [110/128] via 13.13.9.3, 00:00:02, Serial1/0.123
+                           [110/128] via 13.13.9.1, 00:00:02, Serial1/0.123
+O E2    	13.13.11.0 [110/20] via 13.13.9.1, 00:00:02, Serial1/0.123
+O E2    	13.13.14.0 [110/20] via 13.13.9.1, 00:00:02, Serial1/0.123
+O E2  199.172.5.0/24 [110/20] via 13.13.9.1, 00:00:02, Serial1/0.123
+        150.100.0.0/24 is subnetted, 1 subnets
+O E2    	150.100.1.0 [110/20] via 13.13.9.1, 00:00:02, Serial1/0.123
+        150.1.0.0/24 is subnetted, 1 subnets
+O E2    	150.1.13.0 [110/20] via 13.13.9.1, 00:00:02, Serial1/0.123
+O E2  199.172.4.0/24 [110/20] via 13.13.9.1, 00:00:02, Serial1/0.123
+
+
+
+
+
+
+
+=============================================================================================================================
+
+                       ## EIGRP  --->  OSPF
+
+EX) R3은 EIGRP에 포함된 네트워크 정보를 OSPF 환경으로 재분배해야 한다.
+      [OSPF환경으로 재 분배된 EIGRP 네트워크 정보는 Metric값이 누적되어야 한다.]
+
+    # R3
+router ospf 1
+ redistribute eigrp 100 metric-type 1 subnet
+!
+
+       정보 확인
+
+R2# show ip route ospf | include O E1
+O E1    4.1.1.0 [110/84] via 13.13.9.3, 00:03:33, Serial1/0.123
+O E1    128.28.2.0 [110/84] via 13.13.9.3, 00:03:33, Serial1/0.123
+O E1    128.128.1.0 [110/84] via 13.13.9.3, 00:03:33, Serial1/0.123
+O E1 198.2.3.0/24 [110/84] via 13.13.9.3, 00:03:33, Serial1/0.123
+O E1    198.1.1.4 [110/84] via 13.13.9.3, 00:03:33, Serial1/0.123
+O E1 198.2.1.0/24 [110/84] via 13.13.9.3, 00:03:33, Serial1/0.123
+O E1 198.198.1.0/24 [110/84] via 13.13.9.3, 00:04:24, Serial1/0.123
+O E1 198.198.22.0/24 [110/84] via 13.13.9.3, 00:04:24, Serial1/0.123
+O E1    13.13.5.0 [110/84] via 13.13.9.3, 00:03:33, Serial1/0.123
+O E1    13.13.13.0 [110/84] via 13.13.9.3, 00:04:24, Serial1/0.123
+O E1 198.198.4.0/24 [110/84] via 13.13.9.3, 00:04:24, Serial1/0.123
+O E1 198.198.21.0/24 [110/84] via 13.13.9.3, 00:04:24, Serial1/0.123
+O E1 198.2.5.0/24 [110/84] via 13.13.9.3, 00:03:33, Serial1/0.123
+O E1    150.3.13.0 [110/84] via 13.13.9.3, 00:04:25, Serial1/0.123
+O E1 198.198.5.0/24 [110/84] via 13.13.9.3, 00:04:25, Serial1/0.123
+
+
+R2# show ip route ospf | include O E2
+O E2 199.172.11.0/24 [110/20] via 13.13.9.1, 00:04:30, Serial1/0.123
+O E2 199.172.10.0/24 [110/20] via 13.13.9.1, 00:04:30, Serial1/0.123
+O E2 199.172.9.0/24 [110/20] via 13.13.9.1, 00:04:30, Serial1/0.123
+O E2 199.172.8.0/24 [110/20] via 13.13.9.1, 00:04:30, Serial1/0.123
+O E2 199.172.15.0/24 [110/20] via 13.13.9.1, 00:04:30, Serial1/0.123
+O E2 199.172.14.0/24 [110/20] via 13.13.9.1, 00:04:30, Serial1/0.123
+O E2 199.172.13.0/24 [110/20] via 13.13.9.1, 00:04:30, Serial1/0.123
+O E2 199.172.12.0/24 [110/20] via 13.13.9.1, 00:04:30, Serial1/0.123
+O E2 199.172.3.0/24 [110/20] via 13.13.9.1, 00:04:30, Serial1/0.123
+O E2 199.172.2.0/24 [110/20] via 13.13.9.1, 00:04:31, Serial1/0.123
+O E2 199.172.1.0/24 [110/20] via 13.13.9.1, 00:04:31, Serial1/0.123
+O E2 199.172.16.0/24 [110/20] via 13.13.9.1, 00:04:31, Serial1/0.123
+O E2 199.172.7.0/24 [110/20] via 13.13.9.1, 00:04:31, Serial1/0.123
+O E2 199.172.6.0/24 [110/20] via 13.13.9.1, 00:04:31, Serial1/0.123
+O E2    13.13.4.0 [110/20] via 13.13.9.1, 00:04:31, Serial1/0.123
+O E2    13.13.11.0 [110/20] via 13.13.9.1, 00:04:31, Serial1/0.123
+O E2    13.13.14.0 [110/20] via 13.13.9.1, 00:04:31, Serial1/0.123
+O E2 199.172.5.0/24 [110/20] via 13.13.9.1, 00:04:31, Serial1/0.123
+O E2    150.100.1.0 [110/20] via 13.13.9.1, 00:04:31, Serial1/0.123
+O E2    150.1.13.0 [110/20] via 13.13.9.1, 00:04:31, Serial1/0.123
+O E2 199.172.4.0/24 [110/20] via 13.13.9.1, 00:04:31, Serial1/0.123
+
+
+
+
+
+
+
+
+
+
+=============================================================================================================================
+
+                       ## OSPF  --->  EIGRP
+
+EX) R3은 OSPF에 포함된 네트워크 정보를 EIGRP 환경으로 재분배해야 한다.
+
+    # R3
+router eigrp 100
+ redistribute ospf 1 metric 1544   2000       255        1    1500
+!                                 B/W  Delay  reliability  Load  MTU
+
+
+
+R3# show interface serial 1/0
+Serial1/0 is up, line protocol is up 
+  Hardware is M4T
+  Internet address is 13.13.9.3/24
+  MTU 1500 bytes, BW 1544 Kbit, DLY 20000 usec, 
+     reliability 255/255, txload 1/255, rxload 1/255
+
+R5# show ip route eigrp
+D EX  199.172.11.0/24 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D EX  199.172.10.0/24 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D EX  199.172.9.0/24 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D EX  199.172.8.0/24 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D EX  199.172.15.0/24 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D EX  199.172.14.0/24 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D EX  199.172.13.0/24 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D EX  199.172.12.0/24 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D EX  199.172.3.0/24 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D EX  199.172.2.0/24 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D EX  199.172.1.0/24 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D EX  199.172.16.0/24 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D EX  199.172.7.0/24 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D EX  199.172.6.0/24 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+        13.0.0.0/24 is subnetted, 12 subnets
+D EX    	13.13.1.0 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D EX    	13.13.2.0 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D EX    	13.13.3.0 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D EX    	13.13.4.0 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D EX    	13.13.9.0 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D EX    	13.13.10.0 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D EX    	13.13.11.0 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D EX    	13.13.12.0 [170/2195456] via 150.3.13.1, 00:00:03, FastEthernet0/0
+D       	13.13.13.0 [90/307200] via 150.3.13.1, 02:24:58, FastEthernet0/0
+D EX    	13.13.14.0 [170/2195456] via 150.3.13.1, 00:00:04, FastEthernet0/0
+D EX 199.172.5.0/24 [170/2195456] via 150.3.13.1, 00:00:04, FastEthernet0/0
+     150.100.0.0/24 is subnetted, 1 subnets
+D EX    150.100.1.0 [170/2195456] via 150.3.13.1, 00:00:04, FastEthernet0/0
+     150.1.0.0/24 is subnetted, 1 subnets
+D EX    150.1.13.0 [170/2195456] via 150.3.13.1, 00:00:04, FastEthernet0/0
+D EX 199.172.4.0/24 [170/2195456] via 150.3.13.1, 00:00:04, FastEthernet0/0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

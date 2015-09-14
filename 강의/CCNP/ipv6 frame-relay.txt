@@ -1,0 +1,100 @@
+	#R1
+
+int s 1/1
+no shut
+encapsulation frame-relay
+no frame-relay inverse-arp
+frame-relay map ipv6 FE80::C202:DFF:FEC8:0 	113 broadcast
+frame-relay map ipv6 2002:13:13:13::3	 	113 broadcast
+ipv6 add 2002:13:13:13::1/64
+ipv6 enable
+
+
+int s 1/0
+no shut
+encapsulation frame-relay
+no frame-relay inverse-arp
+ frame-relay map ipv6 FE80::C201:DFF:FEC8:0 	102 broadcast
+ frame-relay map ipv6 FE80::C202:DFF:FEC8:0 	102 broadcast
+ frame-relay map ipv6 2002:123:123:123::3 	102 broadcast
+ frame-relay map ipv6 2002:123:123:123::2 	102 broadcast
+ipv6 add 2002:123:123:123::1/64
+ipv6 enable
+
+
+
+
+	#R2
+
+int s 1/0
+no shut
+encapsulation frame-relay
+no frame-relay inverse-arp
+no ipv6 add 3FFE:B00:C18:9::2/64
+ipv6 enable
+
+int s 1/0.123 multipoint
+ipv6 add 2002:123:123:123::2/64
+frame-relay map ipv6 FE80::C200:DFF:FEC8:0 	201 broadcast
+frame-relay map ipv6 FE80::C202:DFF:FEC8:0 	203 broadcast
+ frame-relay map ipv6 2002:123:123:123::1 	201 broadcast
+ frame-relay map ipv6 2002:123:123:123::3 	203 broadcast
+
+
+
+	#R3
+
+int s 1/1
+no shut
+encapsulation frame-relay
+no frame-relay inverse-arp
+frame-relay map ipv6 FE80::C200:DFF:FEC8:0 	311 broadcast
+frame-relay map ipv6 2002:13:13:13::1 		311 broadcast
+ipv6 add 2002:13:13:13::3/64
+ipv6 enable
+
+int s 1/0
+no shut
+encapsulation frame-relay
+no frame-relay inverse-arp
+frame-relay map ipv6 FE80::C201:DFF:FEC8:0 	302 broadcast
+frame-relay map ipv6 FE80::C200:DFF:FEC8:0 	302 broadcast
+ frame-relay map ipv6 2002:123:123:123::1 	302 broadcast
+ frame-relay map ipv6 2002:123:123:123::2 	302 broadcast
+ipv6 add 2002:123:123:123::3/64
+ipv6 enable
+
+
+======================================================================================
+	#R3
+ipv6 router eigrp 100
+ router-id 3.3.3.3
+
+int f 0/1
+ipv6 eigrp 100
+
+int f 0/0
+ipv6 eigrp 100
+
+
+	#R5
+ipv6 router eigrp 100
+ router-id 5.5.5.5
+
+int lo 0
+ipv6 eigrp 100
+
+int f 0/1
+ipv6 eigrp 100
+
+int f 0/0
+ipv6 eigrp 100
+
+
+
+
+
+
+
+
+

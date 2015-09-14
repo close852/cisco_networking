@@ -1,0 +1,139 @@
+	#R1
+ipv6 uni
+interface Loopback0
+ ipv6 address 2001:111:111:111::1/64
+ ipv6 enable
+!
+interface FastEthernet0/0
+ no shut
+ ipv6 address 3FFE:B00:C18:BB1::1/64
+ ipv6 enable
+!
+interface FastEthernet0/1
+ no shut
+ ipv6 address 2068:100:11:11::1/64
+ ipv6 enable
+!
+interface Serial1/0
+ no shut
+ ipv6 address 3FFE:B00:C18:9::1/64
+ ipv6 enable
+!
+interface Serial1/1
+ no shut
+ ipv6 address 3FFE:B00:C18:10::1/64
+ ipv6 enable
+!
+
+
+
+
+
+	#R2
+ipv6 uni
+interface Loopback0
+ ipv6 address 2001:222:222:222::12/64
+ ipv6 enable
+!
+interface FastEthernet0/1
+ no shut
+ ipv6 address 2068:200:12:12::2/64
+ ipv6 enable
+!
+interface Serial1/0
+ no shut
+ ipv6 address 3FFE:B00:C18:9::2/64
+ ipv6 enable
+!
+
+	#R3
+ipv6 uni
+interface Loopback0
+ ipv6 address 2001:333:333:333::3/64
+ ipv6 enable
+!
+interface FastEthernet0/0
+ no shut
+ ipv6 address 3FFE:B00:C18:BB3::3/64
+ ipv6 enable
+!
+interface FastEthernet0/1
+ no shut
+ ipv6 address 2068:300:13:13::3/64
+ ipv6 enable
+!
+interface Serial1/0
+ no shut
+ ipv6 address 3FFE:B00:C18:9::3/64
+ ipv6 enable
+!
+interface Serial1/1
+ no shut
+ ipv6 address 3FFE:B00:C18:10::3/64
+ ipv6 enable
+!
+
+
+
+
+
+	#R4
+ipv6 uni
+interface Loopback0
+ no shut
+ ipv6 address 2001:444:444:444::4/64
+ ipv6 enable
+!
+interface FastEthernet0/0
+ no shut
+ ipv6 address 3FFE:B00:C18:BB1::4/64
+ ipv6 enable
+!
+interface FastEthernet0/1
+ no shut
+ ipv6 address 2068:100:14:14::4/64
+ ipv6 enable
+!
+
+
+
+	#R5
+ipv6 uni
+interface Loopback0
+ ipv6 address 2001:555:555:555::5/64
+ ipv6 enable
+!
+interface FastEthernet0/0
+ no shut
+ ipv6 address 3FFE:B00:C18:BB3::5/64
+ ipv6 enable
+!
+interface FastEthernet0/1
+ no shut
+ ipv6 address 2068:100:15:15::5/64
+ ipv6 enable
+!
+
+
+
+
+
+interface Loopback0
+ ipv6 address 2002:11:11:11::1/64
+
+
+interface Loopback0
+ ipv6 address 2002:22:22:22::2/64
+
+
+
+interface Loopback0
+ ipv6 address 2002:33:33:33::3/64
+
+
+interface Loopback0
+ ipv6 address 2002:44:44:44::4/64
+
+
+interface Loopback0
+ ipv6 address 2002:55:55:55::5/64

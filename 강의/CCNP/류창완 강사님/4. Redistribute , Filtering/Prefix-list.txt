@@ -1,0 +1,557 @@
+                                            ### Prefix-list
+
+
+-ACL과 함께 가장 많이 사용되는 Fintering기능
+  
+            # [기본형식]
+ip prefix-list [Name] seq  [Permit/Deny] [A.B.C.D] /subnetmask [ge] [le]
+
+
+
+ip prefix-list [Name] seq  [Permit/Deny] [A.B.C.D] /subnetmask X [le Y]
+-Subnetmaks가 X부터 Y까지 모두를 포함
+
+
+
+ip prefix-list [Name] seq  [Permit/Deny] [A.B.C.D] /subnetmask X [ge Y] [le Z]
+-X네트워크 범위 내에서 X부터 Z까지의 Subnetmask를 포함
+
+
+
+------------------------------------------------------------------------------------------------------------------
+
+EX1) RX는 RY로부터 수신하는 네트워크중 172.16.1.0/24 , 172.16.3.0/24 네트워크 정보만 수신하려고 한다.
+
+     # Rx
+ip prefix-list NET172 permit 172.16.1.0/24
+ip prefix-list NET172 permit 172.16.3.0/24
+!
+
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------
+
+EX2) 172.16.0.0/16 네트워크를 허용 하시오
+
+
+     # Rx
+ip prefix-list NET172 permit 172.16.0.0/16
+!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------
+
+EX3) 172.16.0.0/16 네트워크를 허용 [172.16.0.0 ~ 172.16.255.255]
+
+ip prefix-list NET172 permit 172.16.0.0/16 le 32
+!
+
+
+
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------
+
+EX4-1) 10.0.0.0/8 네트워크를 허용
+
+ip prefix-list NET10 permit 10.0.0.0/8
+!
+
+
+
+EX4-2) 10.0.0.0/8 네트워크를 허용 [10.0.0.0 ~ 10.255.255.255]
+
+ip prefix-list NET10 permit 10.0.0.0/8 le 32
+!
+
+
+
+
+
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------
+
+EX5) 172.16.0.0/16 네트워크 범위중 Subnetmask가 /24인 네트워크를 허용하시오
+
+ip prefix-list NET172 permit 172.16.0.0/16 ge 24 le 24
+!
+
+
+
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------
+
+EX6) 10.0.0.0/8 네트워크 범위중 Subnetmask가 /27인 네트워크를 허용하시오
+
+ip prefix-list NET10 permit 10.0.0.0/8 ge 27 le 27
+!
+
+
+
+
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------
+
+EX7) 172.16.0.0 ~ 172.16.7.255인 네트워크 범위를 차단하며 나머지 네트워크는 허용
+
+
+-172.16  .00000 000.00000000
+-172.16  .00000 001.00000000
+-172.16  .00000 010.00000000
+-172.16  .00000 011.00000000
+-172.16  .00000 100.00000000
+-172.16  .00000 101.00000000
+-172.16  .00000 110.00000000
+-172.16  .00000 111.11111111
+--------------------------
+-255.255.11111 000.00000000
+
+
+ip prefix-list NET172 deny 172.16.0.0/21 le 32
+ip prefix-list NET172 permit 0.0.0.0/0 le 32
+!
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------
+
+EX8) 사설주소의 범위를 Prefix-list를 사용하여 차단하시오 이외의 모든 네트워크는 허용
+
+-A class	: 10.0.0.0 ~ 10.255.255.255
+-B class	: 172.16.0.0 ~ 172.31.255.255
+-C class	: 192.168.0.0 ~ 192.168.255.255
+
+ip prefix-list PREVATE deny 10.0.0.0/8 le 32
+ip prefix-list PREVATE deny 172.16.0.0/12 le 32
+ip prefix-list PREVATE deny 192.168.0.0/16 le 32
+ip prefix-list PREVATE permit 0.0.0.0/0 le 32
+!
+
+
+
+
+
+
+
+
+==================================================================================================================
+
+
+                     ## 예제 문제
+
+   # R5
+interface loopback 172
+ ip address 172.16.1.1 255.255.255.224
+ ip address 172.16.2.2 255.255.255.224 secondary
+ ip address 172.16.3.3 255.255.255.224 secondary
+ ip address 172.16.4.4 255.255.255.192 secondary
+ ip address 172.16.5.5 255.255.255.192 secondary
+ ip address 172.16.6.6 255.255.255.192 secondary
+ ip address 172.16.7.7 255.255.255.128 secondary
+ ip address 172.16.8.8 255.255.255.128 secondary
+ ip address 172.16.9.9 255.255.255.128 secondary
+ ip address 172.16.10.10 255.255.255.0 secondary
+ ip address 172.16.11.11 255.255.255.0 secondary
+ ip address 172.16.12.12 255.255.255.0 secondary
+!
+router eigrp 100
+ network 172.16.0.0 0.0.15.255
+!
+
+         정보확인
+
+R3# show ip route eigrp | include 172.16
+     172.16.0.0/16 is variably subnetted, 12 subnets, 4 masks
+D       172.16.12.0/24 [90/409600] via 150.3.13.254, 00:00:15, FastEthernet0/0
+D       172.16.8.0/25 [90/409600] via 150.3.13.254, 00:00:15, FastEthernet0/0
+D       172.16.9.0/25 [90/409600] via 150.3.13.254, 00:00:15, FastEthernet0/0
+D       172.16.10.0/24 [90/409600] via 150.3.13.254, 00:00:15, FastEthernet0/0
+D       172.16.11.0/24 [90/409600] via 150.3.13.254, 00:00:15, FastEthernet0/0
+D       172.16.4.0/26 [90/409600] via 150.3.13.254, 00:00:15, FastEthernet0/0
+D       172.16.5.0/26 [90/409600] via 150.3.13.254, 00:00:15, FastEthernet0/0
+D       172.16.6.0/26 [90/409600] via 150.3.13.254, 00:00:15, FastEthernet0/0
+D       172.16.7.0/25 [90/409600] via 150.3.13.254, 00:00:15, FastEthernet0/0
+D       172.16.1.0/27 [90/409600] via 150.3.13.254, 00:00:15, FastEthernet0/0
+D       172.16.2.0/27 [90/409600] via 150.3.13.254, 00:00:15, FastEthernet0/0
+D       172.16.3.0/27 [90/409600] via 150.3.13.254, 00:00:15, FastEthernet0/0
+
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------
+
+
+문제1) R3은 R5로부터 172.16.0.0/16 네트워크중 /24인 네트워크 정보만 EIGRP로 수신해야한다.
+
+     # R3
+ip prefix-list NET172 permit 172.16.0.0/16 ge 24 le 24
+!
+router eigrp 100
+ distribute-list prefix NET172 in fastethernet 0/0
+!
+
+         정보 확인
+
+R3# show ip route eigrp | include 172 	[Distribute-list 적용 전]
+     172.16.0.0/16 is variably subnetted, 12 subnets, 4 masks
+D       172.16.12.0/24 [90/409600] via 150.3.13.254, 00:00:31, FastEthernet0/0
+D       172.16.8.0/25 [90/409600] via 150.3.13.254, 00:00:31, FastEthernet0/0
+D       172.16.9.0/25 [90/409600] via 150.3.13.254, 00:00:31, FastEthernet0/0
+D       172.16.10.0/24 [90/409600] via 150.3.13.254, 00:00:31, FastEthernet0/0
+D       172.16.11.0/24 [90/409600] via 150.3.13.254, 00:00:31, FastEthernet0/0
+D       172.16.4.0/26 [90/409600] via 150.3.13.254, 00:00:31, FastEthernet0/0
+D       172.16.5.0/26 [90/409600] via 150.3.13.254, 00:00:31, FastEthernet0/0
+D       172.16.6.0/26 [90/409600] via 150.3.13.254, 00:00:31, FastEthernet0/0
+D       172.16.7.0/25 [90/409600] via 150.3.13.254, 00:00:31, FastEthernet0/0
+D       172.16.1.0/27 [90/409600] via 150.3.13.254, 00:00:31, FastEthernet0/0
+D       172.16.2.0/27 [90/409600] via 150.3.13.254, 00:00:31, FastEthernet0/0
+D       172.16.3.0/27 [90/409600] via 150.3.13.254, 00:00:31, FastEthernet0/0
+
+
+
+R3# show ip route eigrp | include 172 	[Distribute-list 적용 후]
+     172.16.0.0/24 is subnetted, 3 subnets
+D       172.16.12.0 [90/409600] via 150.3.13.254, 00:06:47, FastEthernet0/0
+D       172.16.10.0 [90/409600] via 150.3.13.254, 00:06:47, FastEthernet0/0
+D       172.16.11.0 [90/409600] via 150.3.13.254, 00:06:47, FastEthernet0/0
+
+
+
+
+             #### 정보 확인후 Distribute-list 삭제
+
+     # R3
+no ip prefix-list NET172 permit 172.16.0.0/16 ge 24 le 24
+!
+router eigrp 100
+ no distribute-list prefix NET172 in fastethernet 0/0
+!
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------
+
+문제2) R3은 R5로부터 172.16.0.0/16 네트워크중 /25 ~ /27인 네트워크 정보만 EIGRP로 수신해야한다.
+
+
+     # R3
+ip prefix-list NET172 permit 172.16.0.0/16 ge 25 le 27
+!
+router eigrp 100
+ distribute-list prefix NET172 in fastethernet 0/0
+!
+
+         정보 확인
+
+R3# show ip route eigrp
+     172.16.0.0/16 is variably subnetted, 9 subnets, 3 masks
+D       172.16.8.0/25 [90/409600] via 150.3.13.254, 00:00:32, FastEthernet0/0
+D       172.16.9.0/25 [90/409600] via 150.3.13.254, 00:00:32, FastEthernet0/0
+D       172.16.4.0/26 [90/409600] via 150.3.13.254, 00:00:32, FastEthernet0/0
+D       172.16.5.0/26 [90/409600] via 150.3.13.254, 00:00:32, FastEthernet0/0
+D       172.16.6.0/26 [90/409600] via 150.3.13.254, 00:00:32, FastEthernet0/0
+D       172.16.7.0/25 [90/409600] via 150.3.13.254, 00:00:32, FastEthernet0/0
+D       172.16.1.0/27 [90/409600] via 150.3.13.254, 00:00:32, FastEthernet0/0
+D       172.16.2.0/27 [90/409600] via 150.3.13.254, 00:00:32, FastEthernet0/0
+D       172.16.3.0/27 [90/409600] via 150.3.13.254, 00:00:32, FastEthernet0/0
+
+
+
+
+
+
+
+
+
+
+             #### 정보 확인후 Distribute-list 삭제
+
+     # R3
+no ip prefix-list NET172
+!
+router eigrp 100
+ no distribute-list prefix NET172 in fastethernet 0/0
+!
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------
+
+문제3) R3은 R5로부터 172.16.0.0/16 네트워크중 /24 ~ /25인 네트워크 정보를 제외한 나머지 네트워크만 수신해야 한다.
+
+     # R3
+ip prefix-list NET172 deny 172.16.0.0/16 ge 24 le 25
+ip prefix-list NET172 permit 0.0.0.0/0 le 32
+!
+router eigrp 100
+ distribute-list prefix NET172 in fastethernet 0/0
+!
+
+         정보 확인
+
+R3# show ip route eigrp | include 172
+     172.16.0.0/16 is variably subnetted, 6 subnets, 2 masks
+D       172.16.4.0/26 [90/409600] via 150.3.13.254, 00:07:01, FastEthernet0/0
+D       172.16.5.0/26 [90/409600] via 150.3.13.254, 00:07:01, FastEthernet0/0
+D       172.16.6.0/26 [90/409600] via 150.3.13.254, 00:07:01, FastEthernet0/0
+D       172.16.1.0/27 [90/409600] via 150.3.13.254, 00:07:01, FastEthernet0/0
+D       172.16.2.0/27 [90/409600] via 150.3.13.254, 00:07:01, FastEthernet0/0
+D       172.16.3.0/27 [90/409600] via 150.3.13.254, 00:07:01, FastEthernet0/0
+
+
+R3# show ip route eigrp              
+      4.0.0.0/24 is subnetted, 1 subnets
+D         4.1.1.0 [90/409600] via 150.3.13.254, 00:04:41, FastEthernet0/0
+      172.16.0.0/16 is variably subnetted, 6 subnets, 2 masks
+D         172.16.4.0/26 [90/409600] via 150.3.13.254, 00:07:16, FastEthernet0/0
+D         172.16.5.0/26 [90/409600] via 150.3.13.254, 00:07:16, FastEthernet0/0
+D         172.16.6.0/26 [90/409600] via 150.3.13.254, 00:07:16, FastEthernet0/0
+D         172.16.1.0/27 [90/409600] via 150.3.13.254, 00:07:16, FastEthernet0/0
+D         172.16.2.0/27 [90/409600] via 150.3.13.254, 00:07:16, FastEthernet0/0
+D         172.16.3.0/27 [90/409600] via 150.3.13.254, 00:07:16, FastEthernet0/0
+      128.28.0.0/24 is subnetted, 1 subnets
+D         128.28.2.0 [90/409600] via 150.3.13.254, 00:04:41, FastEthernet0/0
+      128.128.0.0/24 is subnetted, 1 subnets
+D         128.128.1.0 [90/409600] via 150.3.13.254, 00:04:41, FastEthernet0/0
+D    198.2.3.0/24 [90/409600] via 150.3.13.254, 00:04:41, FastEthernet0/0
+      198.1.1.0/30 is subnetted, 1 subnets
+D         198.1.1.4 [90/409600] via 150.3.13.254, 00:04:41, FastEthernet0/0
+D    198.2.1.0/24 [90/409600] via 150.3.13.254, 00:04:41, FastEthernet0/0
+D    198.198.1.0/24 [90/409600] via 150.3.13.254, 00:04:41, FastEthernet0/0
+D    198.198.22.0/24 [90/409600] via 150.3.13.254, 00:04:42, FastEthernet0/0
+      13.0.0.0/24 is subnetted, 7 subnets
+D         13.13.5.0 [90/409600] via 150.3.13.254, 00:04:42, FastEthernet0/0
+D    198.198.4.0/24 [90/409600] via 150.3.13.254, 00:04:42, FastEthernet0/0
+D    198.198.21.0/24 [90/409600] via 150.3.13.254, 00:04:42, FastEthernet0/0
+D    198.2.5.0/24 [90/409600] via 150.3.13.254, 00:04:42, FastEthernet0/0
+D    198.198.5.0/24 [90/409600] via 150.3.13.254, 00:04:42, FastEthernet0/0
+
+
+
+
+
+
+             #### 정보 확인후 Distribute-list 삭제
+
+     # R3
+no ip prefix-list NET172
+!
+router eigrp 100
+ no distribute-list prefix NET172 in fastethernet 0/0
+!
+
+
+
+
+
+
+
+
+
+
+
+
+==================================================================================================================
+
+
+                       ## Route-map
+
+-가장 일반적으로 사용되는 Filtering기법으로 ACL이나 Prefix-list , Interface를 사용하여
+  특정 트래픽을 지정한후 해당 트래픽을 Filtering하거나 속성을 변경하는 기능이며
+  Text기반으로 동작하게된다. Moduler의 시초이다
+
+1.ACL , Prefix-list를 사용하여 특정 트래픽을 지정
+2.route-map을 생성한다.
+3.Match구문을 사용하여 ACL , Prefix-list , Interface , AS-Path등을 불러온다.
+  [Match 구믄은 OR 또는 AND개념을 사용하여 적용이 가능하다.]
+4.Set구문을 사용하여 Action을 실시
+5.지정하지 않은 나머지 모든 트래픽은 차단
+
+
+             # 벌금
+-노상방뇨		: 5만원
+-무단횡단		: 5만원
+
+-중앙선침범	: 10만원
+-신호위반		: 10만원
+
+-음주운전		: 100만원
+-무면허		: 100만원
+
+-무면허+음주운전	: 구속
+
+route-map 벌금 permit 10
+ match 노상방뇨 무단횡단
+ set 벌금 5만원
+!
+route-map 벌금 permit 20
+ match 중앙선침범 신호위반
+ set 벌금 10만원
+!
+route-map 벌금 permit 30
+ match 음주운전
+ match 무면허
+ set 구속
+!
+route-map 벌금 permit 40
+ match 음주운전 무면허
+ set 벌금 100만원
+!
+route-map 벌금 permit 50
+!
+
+
+              ## Tagging 실습
+
+문제1) 아래의 조건에 맞게 설정을 실시하시오
+ .R5는 자신의 198.198.x.0/24 네트워크를 TAG 100으로 업데이트를 실시해야한다.
+ .R5는 자신의 172.16.x.0/24 네트워크를 TAG 150으로 업데이트를 실시해야한다.
+ .나머지 네트워크 정보는 변경없이 라우팅 업데이트되어야 한다.
+
+     # R5
+ip prefix-list TAG_100 permit 198.198.0.0/16 ge 24 le 24
+ip prefix-list TAG_150 permit 172.16.0.0/16 ge 24 le 24
+!
+route-map TAG permit 10
+ match ip address prefix TAG_100
+ set tag 100
+!
+route-map TAG permit 20
+ match ip address prefix TAG_150
+ set tag 150
+!
+route-map TAG permit 30
+!
+router eigrp 100
+ distribute-list route-map TAG out fastethernet 0/0
+!
+
+
+R3# show ip route 198.198.1.0
+Routing entry for 198.198.1.0/24
+  Known via "eigrp 100", distance 90, metric 409600
+  Tag 100, type internal
+  Redistributing via eigrp 100
+  Last update from 150.3.13.254 on FastEthernet0/0, 00:00:14 ago
+  Routing Descriptor Blocks:
+  * 150.3.13.254, from 150.3.13.254, 00:00:14 ago, via FastEthernet0/0
+      Route metric is 409600, traffic share count is 1
+      Total delay is 6000 microseconds, minimum bandwidth is 10000 Kbit
+      Reliability 255/255, minimum MTU 1500 bytes
+      Loading 1/255, Hops 1
+      Route tag 100
+
+
+R3# show ip eigrp topology | include tag
+P 198.198.1.0/24, 1 successors, FD is 409600, tag is 100
+P 198.198.4.0/24, 1 successors, FD is 409600, tag is 100
+P 198.198.5.0/24, 1 successors, FD is 409600, tag is 100
+P 198.198.21.0/24, 1 successors, FD is 409600, tag is 100
+P 198.198.22.0/24, 1 successors, FD is 409600, tag is 100
+P 172.16.12.0/24, 1 successors, FD is 409600, tag is 150
+P 172.16.10.0/24, 1 successors, FD is 409600, tag is 150
+P 172.16.11.0/24, 1 successors, FD is 409600, tag is 150
+
+
+
+
+
+
+
+문제2) 아래의 조건에 맞게 설정을 실시하시오
+ .R3은 R5로부터 수신하는 EIGRP 네트워크 정보중 198.198.x.0/24 네트워크 정보만 수신해야 한다.
+
+    # R3
+route-map TAG_PER permit 10
+ match tag 100
+!
+router eigrp 100
+ distribute-list route-map TAG_PER in fastethernet 0/0
+!
+
+
+R3# show ip route eigrp
+D    198.198.1.0/24 [90/409600] via 150.3.13.254, 00:09:32, FastEthernet0/0
+D    198.198.22.0/24 [90/409600] via 150.3.13.254, 00:09:32, FastEthernet0/0
+D    198.198.4.0/24 [90/409600] via 150.3.13.254, 00:09:32, FastEthernet0/0
+D    198.198.21.0/24 [90/409600] via 150.3.13.254, 00:09:32, FastEthernet0/0
+D    198.198.5.0/24 [90/409600] via 150.3.13.254, 00:09:32, FastEthernet0/0
+
+
+
+R3# show ip eigrp topology | include tag
+P 198.198.1.0/24, 1 successors, FD is 409600, tag is 100
+P 198.198.4.0/24, 1 successors, FD is 409600, tag is 100
+P 198.198.5.0/24, 1 successors, FD is 409600, tag is 100
+P 198.198.21.0/24, 1 successors, FD is 409600, tag is 100
+P 198.198.22.0/24, 1 successors, FD is 409600, tag is 100
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
