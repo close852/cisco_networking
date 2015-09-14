@@ -1,0 +1,476 @@
+                             ## BGPv4 (Border Gateway Protocol Version 4 : 바탕 / 굴게 / 14)
+
+             # IGP (Interior Gateway Protocol)
+-RIPv1/v2, IGRP, EIGRP, OSPF, IS-IS
+-AS 안에서 Local 네트워크의 빠른 수렴의 속도를 가지고 라우팅 업데이트 용도
+-Next-Hop : 바로 앞에 있는 라우터가Next-Hop이된다.
+-라우팅 업데이트시 메트릭을 광고한다.
+  
+
+
+             # EGP (Exterior Gateway Protocol) 
+-BGPv4
+-AS(Autonomous System) 지역 정보 라우팅 담당
+-AS와 AS 사이에서 수많은 네트워크 정보를 라우팅 업데이트 용도
+-Next-Hop 처리 : 바로 앞에 있는 AS가 넥스트-홉이다.
+-라우팅 업데이트시 BGP 속성(Attribute)을 광고한다.
+
+
+             # BGPv4 (Border Gateway Protocol)
+-Path Vector 알고리즘  (Distance Vector)
+-네트워크 환경에 변경이 있는경우 변경된 부분에 대해서만 부분적인 라우팅 업데이트
+-AS라는 Domain을 사용하여 동작하다. (AS = 1~65535 , 사설 AS = 64512 ~ 65535)
+-Classless Routing Protocol : VLSM, CIDR 기능 지원
+-BGP 인접성 관계를 BGP Peer라고 한다.  (IGP의 "neighbor"관계와 동일)
+-TCP Port 179번을 이용해서 BGP Peer 연결 실시하여 인접 관계 성립
+-BGP 라우팅 업데이트는 BGP Peer간 실시한다.
+-사용 용도따라 동일 AS에서 동작하는 iBGP와 서로 다른 AS 사이에서 동작되는 eBGP로 구성된다.  
+-eBGP의 AD값은 20이며 iBGP의 AD값은 200으로 처리된다.
+-BGP는 기본적으로 Loop가 없는 라우팅을 보장한다.
+-기본적으로 로드분산을 고려하지 않으며, 최적의 경로 하나만 선출한다.
+-BGP는 다양한 BGP 속성(Attribute)을 이용하여 최적의 경로를 선출한다.
+-라우터에서는 하나의 BGP 프로세서만 동작이 가능하다.
+
+
+
+             # AS(Autonomous System)
+-네트워크가 모여 생성한 지역 도메인
+-AS와 AS들이 연결되어 통신망의 집합체 인터넷이라는 네트워크를 구성
+-AS 범위 : 2 Byte(16 Bit), 1 ~ 65535 AS 번호 사용(사설 AS 64512 ~ 65535)
+-Customer AS는 절대 Transit AS가 되면 안된다.(ISP, Backbone이 Transit AS 수행)
+-BGP는 AS와 AS간 이윤 관계와 민감하다.
+
+
+
+
+             # BGP 사용이 필요한 경우
+
+-많은 AS와의 연결을 실시 할 경우
+-라우팅 정책이 필요할 경우
+-AS와 AS간에 수많은 라우팅 정보를 업데이트 할 경우
+-MPLS VPN 구현시 MP-BGP 구성시 필요
+
+
+
+             # BGP 사용이 적당하지 않는 경우
+
+-단일 AS 연결을 실시 할 경우(Default Static 경로 처리)
+-대역폭이 낮은 환경일 경우
+-장비 사양이 낮은 경우
+-BGP 사용 조건에 맞지 않을 경우
+
+
+
+             # BGP 4 가지 테이블
+
+-BGP Neighbor 	: show ip bgp neighbor
+-BGP 상태 Table 	: show ip bgp summary
+-BGP 포워딩 Table : show ip bgp 
+-BGP 포워딩 테이블에서 선출된 최적의 경로만 라우팅 테이블에 등록
+
+
+             # BGP 메세지 
+-BGP는 TCP 179번을 사용하여 Session을 연결한다.
+ .Open 		: TCP 3-Way통신후 BGP를 연결하는 Message
+ .Update 		: BGP 라우팅 업데이트 정보
+ .Keepalive 	: TCP 연결이 끝난 네이버 관계 상태에서 인접 관계 유지 점검, 1분 주기로 교환 실시
+ .Notification 	: BGP 상태 연결 문제시 사용 및 해결
+
+
+             # BGP 단계
+-Idle 		: BGP가 시작하는 단계, BGP Process에서 "neighbor"command로 지정한 Peer를 찾는 단계
+-Connected 	: TCP 3-Way 핸드쉐이킹을 끝낸 상태
+-Opensent 	: 네이버에게 Open 메세지를 전달하고, 자기는 Open 메세지 수신을 대기하는 상태
+ .Open 수신 했다면, OpenConfirm
+ .Open 수신을 못했다면, Active (BGP 관련 설정이 잘못된 경우가 많음)
+
+-OpenConfirm 	: Open 수신 상태
+-Established 	: BGP Peer 성립, Keepalive 메세지만 교환(60초 주기)
+
+
+---------------------------------------------------------------------------------------------------------------
+
+                        ### BGP 구현시 주의사항
+
+-BGP는 모든 Router에 BGP Routing Protocol이 구성되지 않아도 BGP Peer가 연결가능하다.
+  단 NLRI가 확인되어야한다. (Network Layer Reachability Information)
+
+-1. BGP 동기화
+ : BGP로 수신한 네트워크 정보는 IGP로 확인되어야 한다.  (BGP 블랙홀 포인트현상 발생)
+   [단. 현재는 모든 Router에 BGP가 동작하기때문에 문제되지 않는다.]
+
+
+-2. BGP Split-horizon
+ .iBGP로 수신한 네트워크 정보는 iBGP로 송신할수 없다.
+    # Full-mash
+    # Route-reflector
+    # Confederation
+
+
+-3. BGP Next-hop
+ .동일 AS내에서는 Next-hop이 변경되지 않는다.
+  즉 서로 다른 AS간에만 Next-hop이 변경된다.  (DMZ구간에서만 문제 발생)
+
+
+
+
+
+
+
+
+
+
+
+=============================================================================================================================
+
+
+                        ### 물리적 Interface를 사용한 BGP Peer연결
+
+
+                 13.13.14.0/24           13.13.12.0/24            13.13.23.0/24            13.13.35.0/24
+        R4-----------------R1-----------------R2-----------------R3-----------------R5
+     BGP 100                      |------------------------- BGP 200 -------------------------|
+ 
+          ## R1과 R2구간 사이의 eBGP Peer연결
+
+   # R4
+router bgp 100
+ no synchronization 
+ no auto-summary
+ bgp router-id 13.13.4.4
+ neighbor 13.13.14.1 remote-as 200
+!
+
+
+   # R1
+router bgp 200
+ no synchronization 
+ no auto-summary
+ bgp router-id 13.13.1.1
+ neighbor 13.13.14.4 remote-as 100
+!
+
+
+
+          정보확인 
+
+RX# show ip bgp summary
+
+
+
+
+          ## R1 , R2 , R3 , R5구간 사이의 iBGP Peer연결
+
+
+   # R1
+router bgp 200
+ neighbor 13.13.12.2 remote-as 200
+!
+
+   # R2
+router bgp 200
+ no synchronization 
+ no auto-summary
+ bgp router-id 13.13.2.2
+ neighbor 13.13.12.1 remote-as 200
+ neighbor 13.13.23.3 remote-as 200
+!
+
+   # R3
+router bgp 200
+ no synchronization 
+ no auto-summary
+ bgp router-id 13.13.3.3
+ neighbor 13.13.23.2 remote-as 200
+ neighbor 13.13.35.5 remote-as 200
+!
+
+   # R5
+router bgp 200
+ no synchronization 
+ no auto-summary
+ bgp router-id 13.13.5.5
+ neighbor 13.13.35.3 remote-as 200
+!
+
+
+          정보확인 
+
+RX# show ip bgp summary
+
+
+----------------------------------------------------------------------------------------
+
+
+
+                        ### 논리적 Interface를 사용한 BGP Peer연결
+
+                 13.13.14.0/24           13.13.12.0/24            13.13.23.0/24            13.13.35.0/24
+        R4-----------------R1-----------------R2-----------------R3-----------------R5
+     BGP 100                      |------------------------- BGP 200 -------------------------|
+
+
+-BGP는 NLRI가 확립되면 BGP Peer를 연결가능하므로 논리적인 Interface를 사용하여 BGP Peer를 연결
+
+-BGP 망의 안정성을 높이기 위해서 논리적인 Interface를 사용하여 BGP Peer를 연결할수 있다.
+
+
+                       ## 논리적인 Interface를 사용한 iBGP Peer 연결
+
+
+     # R1
+router bgp 200
+ no sync
+ no auto-summary
+ bgp router-id 13.13.1.1
+ neighbor 13.13.2.2 remote-as 200
+ neighbor 13.13.2.2 update-source loopback 0
+!
+
+     # R2
+router bgp 200
+ no sync
+ no auto-summary
+ bgp router-id 13.13.2.2
+ neighbor 13.13.1.1 remote-as 200
+ neighbor 13.13.1.1 update-source loopback 0
+ neighbor 13.13.3.3 remote-as 200
+ neighbor 13.13.3.3 update-source loopback 0
+!
+
+     # R3
+router bgp 200
+ no sync
+ no auto-summary
+ bgp router-id 13.13.3.3
+ neighbor 13.13.2.2 remote-as 200
+ neighbor 13.13.2.2 update-source loopback 0
+ neighbor 13.13.5.5 remote-as 200
+ neighbor 13.13.5.5 update-source loopback 0
+!
+
+     # R2
+router bgp 200
+ no sync
+ no auto-summary
+ bgp router-id 13.13.5.5
+ neighbor 13.13.3.3 remote-as 200
+ neighbor 13.13.3.3 update-source loopback 0
+!
+ 
+          정보 확인
+
+R1# show ip bgp summary
+Neighbor        V    AS  MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+13.13.2.2       4   200            4          4          1      0      0 00:00:07        0
+
+
+R2# show ip bgp summary
+Neighbor        V    AS  MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+13.13.1.1       4   200            4          4          1      0      0 00:00:07        0
+13.13.3.3       4   200            4          4          1      0      0 00:00:07        0
+
+
+R3# show ip bgp summary
+Neighbor        V    AS  MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+13.13.2.2       4   200            4          4          1      0      0 00:00:07        0
+13.13.5.5       4   200            4          4          1      0      0 00:00:07        0
+
+
+R5# show ip bgp summary
+Neighbor        V    AS  MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+13.13.3.3       4   200            4          4          1      0      0 00:00:07        0
+
+
+
+
+
+
+
+                       ## 논리적인 Interface를 사용한 eBGP Peer 연결
+
+    # R4
+router bgp 100
+ no sync
+ no auto-summary
+ bgp router-id 13.13.4.4
+ neighbor 13.13.1.1 remote-as 200
+ neighbor 13.13.1.1 update-source loopback 0
+!
+
+    # R1
+router bgp 200
+ neighbor 13.13.4.4 remote-as 100
+ neighbor 13.13.4.4 update-source loopback 0
+!
+
+         정보 확인
+
+R4# show ip bgp summary
+Neighbor        V    AS   MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+13.13.1.1       4    200            0          0          0      0      0  never      Idle	<--- idle = BGP Peer를 찾지 못한상태
+
+R1# show ip bgp summary
+Neighbor        V    AS   MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+13.13.2.2       4    200            9          9          1      0      0  00:29:03        0
+13.13.4.4       4    100            0          0          0      0      0  never      Idle	<--- idle = BGP Peer를 찾지 못한상태
+
+
+-Multihop
+ .IGP에서는 Connecte가 0 hop이지만 EGP에서는 connecte가 1 hop으로 계산된다.
+ .iBGP는 multihop이 255로 설정되어있기때문에 물리적인 Interface가 아닌 
+  논리적인 Interface를 사용하여 BGP Peer연결시 자동으로 연결된다.
+ .eBGP는 multihop이 1로 설정되어있기때문에 직접 연결되지 않은 논리적인 Interface로 연결시
+  multhop수를 수동으로 증가시켜야 한다.
+
+
+    # R4
+router bgp 100
+ no sync
+ no auto-summary
+ bgp router-id 13.13.4.4
+ neighbor 13.13.1.1 remote-as 200
+ neighbor 13.13.1.1 update-source loopback 0
+ neighbor 13.13.1.1 ebgp-multihop 3
+!
+
+    # R1
+router bgp 200
+ neighbor 13.13.4.4 remote-as 100
+ neighbor 13.13.4.4 update-source loopback 0
+ neighbor 13.13.4.4 ebgp-multihop 3
+!
+
+        정보 확인
+
+R4# show ip bgp summary
+Neighbor        V    AS   MsgRcvd MsgSent   TblVer  InQ OutQ  Up/Down  State/PfxRcd
+13.13.1.1       4    200            4          4           1     0      0  00:00:03        0
+
+
+R1# show ip bgp summary
+Neighbor        V    AS   MsgRcvd MsgSent   TblVer  InQ OutQ  Up/Down  State/PfxRcd
+13.13.2.2       4    200            9          9           1     0      0  00:33:17        0
+13.13.4.4       4    100            4          4           1     0      0  00:00:03        0
+
+=============================================================================================================================
+
+
+                ### BGP의 빠른 업데이트 , 정보확인을 실시하기위한 'Clear' command
+
+
+-Clear ip bgp * : BGP Session을 단절한후 다시 Session 연결
+
+-Clear ip bgp * soft : 가상으로 BGP를 Clear하는 방법
+
+-clear ip bgp * in   : 입력경로만 재요청
+
+-clear ip bgp * out : 출력경로만 재 송신
+
+
+----------------------------------------------------------------------------------------
+
+-R4의 loopback 1에 아래의 네트워크를 설정
+
+   # R4
+interface loopback 1
+ ip address 10.1.4.4 255.255.255.0
+ ip address 172.16.4.4 255.255.255.0 secondary
+ ip address 192.168.4.4 255.255.255.0 secondary
+!
+
+
+-BGP를 사용하여 아래의 네트워크를 업데이트 실시
+ .10.1.4.0/24
+ .172.16.4.0/24
+ .192.168.4.0/24
+
+   # R4
+router bgp 100
+ network 10.1.4.0 mask 255.255.255.0
+ network 172.16.4.0 mask 255.255.255.0
+ network 192.168.4.0
+!
+
+-BGP업데이트시 원본Class로 설정된 네트워크를 업데이트 할경우 'Network' command만 사용하지만
+ Subnetting , VLSM을 사용하여 Subnetmask변경시 'mask' command를 사용하여 변경된 Subnetmask를 설정해야한다.
+
+-eBGP의 AD값은 20이며 iBGP의 AD값은 200으로 처리된다.
+
+
+
+
+=============================================================================================================================
+
+
+                              ### Split-horizon
+
+-BGP Split-horizon
+ : iBGP로 업데이트 받은 정보를 iBGP로 다시 업데이트 할수없다.
+
+
+-BGP Split-horizon은 Full-mash , Route-reflecte , Confederation을
+  사용하여 해결해야한다.
+
+
+
+                 13.13.14.0/24           13.13.12.0/24            13.13.23.0/24            13.13.35.0/24
+        R4-----------------R1-----------------R2-----------------R3-----------------R5
+     BGP 100                      |------------------------- BGP 200 -------------------------|
+
+
+-설정을 실시하고나면 R1 , R2에서는 위의 192.168.1.0/24 네트워크 정보가 확인되어지지만
+  R3 , R5에서는 해당 네트워크가 확인되지 않는다.
+
+-이유 : R4가 R1에게 eBGP로 업데이트를 실시하며 R1이 R2에게 iBGP로 업데이트를 실시하게된다
+          R3이 iBGP로 수신한 네트워크 정보를 R3에게 다시  iBGP로 업데이트 할수 없기때문에
+          R3 , R5에서는 해당 네트워크가 확인되지 않는다.
+
+
+------------------------------------------------------------------------------------------------------
+
+
+
+                      ## Full-mash를 사용한 Split-horizon해결
+
+-iBGP상의 모든 BGP Router간 Peer를 연결하는 방식
+
+   # R1
+router bgp 200
+ neighbor 13.13.2.2 remote-as 200
+ neighbor 13.13.2.2 update-source loopback 0
+ neighbor 13.13.3.3 remote-as 200
+ neighbor 13.13.3.3 update-source loopback 0
+ neighbor 13.13.5.5 remote-as 200
+ neighbor 13.13.5.5 update-source loopback 0
+!
+
+   # R2
+router bgp 200
+ neighbor 13.13.1.1 remote-as 200
+ neighbor 13.13.1.1 update-source loopback 0
+ neighbor 13.13.3.3 remote-as 200
+ neighbor 13.13.3.3 update-source loopback 0
+ neighbor 13.13.5.5 remote-as 200
+ neighbor 13.13.5.5 update-source loopback 0
+!
+
+   # R3
+router bgp 200
+ neighbor 13.13.1.1 remote-as 200
+ neighbor 13.13.1.1 update-source loopback 0
+ neighbor 13.13.2.2 remote-as 200
+ neighbor 13.13.2.2 update-source loopback 0
+ neighbor 13.13.5.5 remote-as 200
+ neighbor 13.13.5.5 update-source loopback 0
+!
+
+   # R5
+router bgp 200
+ neighbor 13.13.1.1 remote-as 200
+ neighbor 13.13.1.1 update-source loopback 0
+ neighbor 13.13.2.2 remote-as 200
+ neighbor 13.13.2.2 update-source loopback 0
+ neighbor 13.13.3.3 remote-as 200
+ neighbor 13.13.3.3 update-source loopback 0
+!
