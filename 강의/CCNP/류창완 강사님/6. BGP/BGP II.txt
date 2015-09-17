@@ -1,0 +1,751 @@
+EX1) 아래의 조건에 맞게 BGP Peer를 연결하시오
+ .R1 , R3 , R4 , R5에서 AS 1013을 구성하며 R3이 Route-reflector로 동작해야 한다.
+ .BGP Peer연결시 Loopback0의 IP 주소를 사용해야한다.
+
+     # R3
+router bgp 1013
+ no auto-summary
+ no sync
+ bgp router-id 13.13.3.3
+ neighbor 13.13.1.1 remote-as 1013
+ neighbor 13.13.1.1 update-source loopback 0
+ neighbor 13.13.1.1 route-reflector-client
+ neighbor 13.13.4.4 remote-as 1013
+ neighbor 13.13.4.4 update-source loopback 0
+ neighbor 13.13.4.4 route-reflector-client
+ neighbor 13.13.5.5 remote-as 1013
+ neighbor 13.13.5.5 update-source loopback 0
+ neighbor 13.13.5.5 route-reflector-client
+!
+
+     # R1
+router bgp 1013
+ no auto-summary
+ no sync
+ bgp router-id 13.13.1.1
+ neighbor 13.13.3.3 remote-as 1013
+ neighbor 13.13.3.3 update-source loopback 0
+!
+
+     # R4
+router bgp 1013
+ no auto-summary
+ no sync
+ bgp router-id 13.13.4.4
+ neighbor 13.13.3.3 remote-as 1013
+ neighbor 13.13.3.3 update-source loopback 0
+!
+
+     # R5
+router bgp 1013
+ no auto-summary
+ no sync
+ bgp router-id 13.13.5.5
+ neighbor 13.13.3.3 remote-as 1013
+ neighbor 13.13.3.3 update-source loopback 0
+!
+
+           정보확인
+
+R3# show ip bgp summary
+Neighbor        V    AS   MsgRcvd MsgSent   TblVer  InQ OutQ  Up/Down  State/PfxRcd
+13.13.1.1        4  1013           2          2          0      0      0   00:00:05          0
+13.13.4.4        4  1013           2          2          0      0      0   00:00:06          0
+13.13.5.5        4  1013           2          2          0      0      0   00:00:04          0
+
+
+R1# show ip bgp summary
+Neighbor        V    AS   MsgRcvd MsgSent   TblVer  InQ OutQ  Up/Down  State/PfxRcd
+13.13.3.3        4  1013           2          2          0      0      0   00:00:05          0
+
+
+R4# show ip bgp summary
+Neighbor        V    AS   MsgRcvd MsgSent   TblVer  InQ OutQ  Up/Down  State/PfxRcd
+13.13.3.3        4  1013           2          2          0      0      0   00:00:05          0
+
+
+R5# show ip bgp summary
+Neighbor        V    AS   MsgRcvd MsgSent   TblVer  InQ OutQ  Up/Down  State/PfxRcd
+13.13.3.3        4  1013           2          2          0      0      0   00:00:05          0
+
+
+
+
+
+===========================================================================================================================================
+
+EX3) R2에서 AS 13을 구성하고 R1-R2 , R2-R3 eBGP를 구성하시오
+       이때 직접 연결된 Serial interface IP주소를 사용하여 BGP Peer구성
+
+    # R1
+router bgp 1013
+ neighbor 13.13.21.2 remote-as 13
+!
+
+    # R3
+router bgp 1013
+ neighbor 13.13.23.2 remote-as 13
+!
+
+    # R2
+router bgp 13
+ no auto-summary
+ no sync
+ bgp router-id 13.13.2.2
+ neighbor 13.13.21.1 remote-as 1013
+ neighbor 13.13.23.3 remote-as 1013
+!
+
+           정보확인
+
+R1# show ip bgp summary
+Neighbor        V    AS    MsgRcvd MsgSent   TblVer  InQ OutQ  Up/Down  State/PfxRcd
+13.13.3.3        4  1013	   8          8   	0     0      0   00:07:35          0
+13.13.21.2       4     13        	   4          4          	1     0      0   00:00:54          0
+
+
+R2# show ip bgp summary
+Neighbor        V    AS   MsgRcvd MsgSent   TblVer  InQ OutQ  Up/Down  State/PfxRcd
+13.13.21.1      4  1013	   8          8   	0     0      0   00:07:35          0
+13.13.23.3      4  1013        	   4          4          	1     0      0   00:00:54          0
+
+
+R3# show ip bgp summary
+Neighbor        V    AS   MsgRcvd MsgSent   TblVer  InQ OutQ  Up/Down  State/PfxRcd
+13.13.1.1        4  1013	   8          8   	0     0      0   00:07:35          0
+13.13.4.4        4  1013	   8          8   	0     0      0   00:07:35          0
+13.13.5.5        4  1013	   8          8   	0     0      0   00:07:35          0
+13.13.23.2       4     13        	   4          4          	1     0      0   00:00:54          0
+
+
+
+=============================================================================================================================
+
+EX4) R2의 Loopback 197 , Loopback 1 정보를 BGP로 라우팅 업데이트를 실시해야 한다.
+
+   # R2
+router bgp 13
+ network 197.68.1.0
+ network 197.68.2.0
+ network 197.68.3.0
+ network 197.68.4.0
+ network 197.68.5.0
+ network 197.68.21.0
+ network 197.68.22.0
+ network 10.1.1.0 mask 255.255.255.0
+ network 172.16.1.0 mask 255.255.255.0
+ network 192.168.1.0
+!
+
+       정보 확인
+
+R3# show ip bgp
+   Network          	Next Hop               Metric LocPrf Weight Path
+* i10.1.1.0/24      	13.13.21.2                    0     100  	0 13 i
+*>                  	13.13.23.2                    0             	0 13 i
+* i172.16.1.0/24    	13.13.21.2                    0     100      	0 13 i
+*>                  	13.13.23.2                    0             	0 13 i
+* i192.168.1.0      	13.13.21.2                    0     100      	0 13 i
+*>                  	13.13.23.2                    0             	0 13 i
+* i197.68.1.0       	13.13.21.2                    0     100      	0 13 i
+*>                  	13.13.23.2                    0             	0 13 i
+* i197.68.2.0       	13.13.21.2                    0     100      	0 13 i
+*>                  	13.13.23.2                    0             	0 13 i
+* i197.68.3.0       	13.13.21.2                    0     100      	0 13 i
+*>                  	13.13.23.2                    0             	0 13 i
+* i197.68.4.0       	13.13.21.2                    0     100      	0 13 i
+*>                  	13.13.23.2                    0             	0 13 i
+* i197.68.5.0       	13.13.21.2                    0     100      	0 13 i
+*>                  	13.13.23.2                    0             	0 13 i
+*> 197.68.21.0      	13.13.23.2                    0             	0 13 i
+* i                 	13.13.21.2                    0     100      	0 13 i
+* i197.68.22.0      	13.13.21.2                    0     100      	0 13 i
+*>                  	13.13.23.2                    0             	0 13 i
+
+
+
+
+
+
+=============================================================================================================================
+
+EX5) BGP AS 1013에 포함된 Router는 BGP AS 13에 대해서 Next-hop이 R3으로 확인되어야 한다.
+
+     # R3
+router bgp 1013
+ neighbor 13.13.1.1 next-hop-self
+ neighbor 13.13.4.4 next-hop-self
+ neighbor 13.13.5.5 next-hop-self
+!
+
+         정보 확인
+
+R4# show ip bgp   [Next-hop 문제 해결 전]
+    Network          	Next Hop            Metric LocPrf Weight Path
+* i10.1.1.0/24      	13.13.23.2                 0     100        0 13 i
+* i172.16.1.0/24    	13.13.23.2                 0     100        0 13 i
+* i192.168.1.0      	13.13.23.2                 0     100        0 13 i
+* i197.68.1.0       	13.13.23.2                 0     100        0 13 i
+* i197.68.2.0       	13.13.23.2                 0     100        0 13 i
+* i197.68.3.0       	13.13.23.2                 0     100        0 13 i
+* i197.68.4.0       	13.13.23.2                 0     100        0 13 i
+* i197.68.5.0       	13.13.23.2                 0     100        0 13 i
+* i197.68.21.0      	13.13.23.2                 0     100        0 13 i
+* i197.68.22.0      	13.13.23.2                 0     100        0 13 i
+
+
+
+R4# show ip bgp   [Next-hop 문제 해결 후]
+    Network          	Next Hop            Metric LocPrf Weight Path
+*>i10.1.1.0/24      	13.13.3.3                  0     100         0 13 i
+*>i172.16.1.0/24    	13.13.3.3                  0     100         0 13 i
+*>i192.168.1.0      	13.13.3.3                  0     100         0 13 i
+*>i197.68.1.0       	13.13.3.3                  0     100         0 13 i
+*>i197.68.2.0       	13.13.3.3                  0     100         0 13 i
+*>i197.68.3.0       	13.13.3.3                  0     100         0 13 i
+*>i197.68.4.0       	13.13.3.3                  0     100         0 13 i
+*>i197.68.5.0       	13.13.3.3                  0     100         0 13 i
+*>i197.68.21.0      	13.13.3.3                  0     100         0 13 i
+*>i197.68.22.0      	13.13.3.3                  0     100         0 13 i
+
+
+
+
+
+
+
+=============================================================================================================================
+
+EX6) R1과 R3은  AS 13으로부터 수신하는 사설 네트워크 정보를 차단해야한다.
+
+-BGP Filtering
+ .Prefix-list
+ .Dsitribute-list
+ .Route-map
+
+     ### "Prefix-list"를 직접 적용
+ip prefix-list PREVATE deny 10.0.0.0/8 le 32
+ip prefix-list PREVATE deny 172.16.0.0/12 le 32
+ip prefix-list PREVATE deny 192.168.0.0/16 le 32
+ip prefix-list PREVATE permit 0.0.0.0/0 le 32
+!
+router bgp 1013
+ neighbor 13.13.21.2 prefix PREVATE in	<--- R1 적용
+!
+router bgp 1013
+ neighbor 13.13.23.2 prefix PREVATE in	<--- R3 적용
+!
+
+     ### "Dsitribute-list"를 사용
+access-list 1 deny 10.0.0.0  0.255.255.255
+access-list 1 deny 172.16.0.0  0.15.255.255
+access-list 1 deny 192.168.0.0  0.0.255.255
+access-list 1 permit any
+!
+router bgp 1013
+ neighbor 13.13.21.2 distribute-list 1 in	<--- R1 적용
+!
+router bgp 1013
+ neighbor 13.13.23.2 distribute-list 1 in	<--- R3 적용
+!
+
+     ### "Route-map"을 사용
+ip prefix-list PREVATE permit 10.0.0.0/8 le 32
+ip prefix-list PREVATE permit 172.16.0.0/12 le 32
+ip prefix-list PREVATE permit 192.168.0.0/16 le 32
+!
+route-map PREVATE_DENY deny 10
+ match ip address prefix PREVATE
+!
+route-map PREVATE_DENY permit 20
+!
+router bgp 1013
+ neighbor 13.13.21.2 route-map PREVATE_DENY in	   <--- R1 적용
+!
+router bgp 1013
+ neighbor 13.13.23.2 route-map PREVATE_DENY in	   <--- R3 적용
+!
+
+           정보 확인
+
+R1# show ip bgp
+    Network          	Next Hop          Metric LocPrf Weight Path
+* i197.68.1.0       	13.13.3.3        	  0     100        0  13 i
+*>                  	13.13.21.2       	  0     100        0  13 i
+* i197.68.2.0       	13.13.3.3        	  0     100        0  13 i
+*>                  	13.13.21.2           	  0     100        0  13 i
+*> 197.68.3.0       	13.13.21.2           	  0     100        0  13 i
+* i                 	13.13.3.3           	  0     100        0  13 i
+*> 197.68.4.0       	13.13.21.2         	  0     100        0  13 i
+* i                 	13.13.3.3            	  0     100        0  13 i
+* i197.68.5.0       	13.13.3.3           	  0     100        0  13 i
+*>                  	13.13.21.2        	  0     100        0  13 i
+* i197.68.21.0      	13.13.3.3           	  0     100        0  13 i
+*>                  	13.13.21.2         	  0     100        0  13 i
+* i197.68.22.0      	13.13.3.3           	  0     100        0  13 i
+*>                  	13.13.21.2          	  0     100        0  13 i
+
+
+
+R3# show ip bgp
+    Network          	Next Hop          Metric LocPrf Weight Path
+* i197.68.1.0       	13.13.21.2               0     100        0 13 i
+*>                  	13.13.23.2               0                 0 13 i
+* i197.68.2.0       	13.13.21.2               0     100        0 13 i
+*>                  	13.13.23.2               0                 0 13 i
+* i197.68.3.0       	13.13.21.2               0     100        0 13 i
+*>                  	13.13.23.2               0                 0 13 i
+* i197.68.4.0       	13.13.21.2               0     100        0 13 i
+*>                  	13.13.23.2               0                 0 13 i
+* i197.68.5.0       	13.13.21.2               0     100        0 13 i
+*>                  	13.13.23.2               0                 0 13 i
+*> 197.68.21.0      	13.13.23.2               0                 0 13 i
+* i                 	13.13.21.2               0     100        0 13 i
+* i197.68.22.0      	13.13.21.2               0     100        0 13 i
+*>                  	13.13.23.2               0                 0 13 i
+
+
+
+
+
+
+
+=============================================================================================================================
+
+EX7) R1 , R3 , R4 , R5의 Loopback 1의 네트워크를 BGP AS 1013으로 라우팅 업데이트를 실시해야 한다.
+
+R1# show ip route connected
+R3# show ip route connected
+R4# show ip route connected
+R5# show ip route connected
+
+
+   # R1
+router bgp 1013
+ network 11.11.11.11 mask 255.255.255.255
+!
+
+   # R3
+router bgp 1013
+ network 33.33.33.33 mask 255.255.255.255
+!
+
+   # R4
+router bgp 1013
+ network 44.44.44.44 mask 255.255.255.255
+!
+
+   # R5
+router bgp 1013
+ network 55.55.55.55 mask 255.255.255.255
+!
+
+       정보 확인
+
+R2# show ip bgp
+   Network          	Next Hop            Metric LocPrf Weight Path
+*  11.11.11.11/32   	13.13.23.3                        	          0 1013 i
+*>                  	13.13.21.1                 0      	          0 1013 i
+*  33.33.33.33/32   	13.13.21.1                       	          0 1013 i
+*>                  	13.13.23.3                 0      	          0 1013 i
+*  44.44.44.44/32   	13.13.21.1                     	          0 1013 i
+*>                  	13.13.23.3                     	          0 1013 i
+*  55.55.55.55/32   	13.13.21.1                     	          0 1013 i
+*>                  	13.13.23.3                       	          0 1013 i
+     ------------------ 중간 생략 ------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+==================================================================================================================
+==================================================================================================================
+
+                         ### BGP Attribute
+
+-BGP는 업데이트 정보안에  Metric이라는 값이 존재하지않고
+  Attribute라는 속성 정보가 포함되어져있다 BGP는 최적경로 선출시 Attribute를 사용
+
+       # BGP Attritbute 우선순위
+
+1.Weight값이 큰경로가 우선한다.
+2.Local-Preference값이 큰 경로가 우선한다.
+3.AS-Path가 짧은 경로가 우선한다.
+4.Origin Code값을 비교 (i > e > ?)
+5.MED가 작은 경로가 우선한다.
+
+
+-eBGP로 수신한 경로가 iBGP로 수신한 경로보다 우선
+
+-iBGP경로가 다수일경우 IGP상 가까운 경로가 우선
+
+-eBGP경로가 다수일경우 TCP연결이 먼저된경로가 우선한다.
+
+-BGP는 Attribute에의해 선출된 최적경로만 BGP Peer에게 업데이트를 실시
+
+-eBGP로 수신한 경로는 최적경로와 관계없이 무조건 수신한다.
+  [Filering에 의해 강제로 경로를 삭제하지않는한 무조건 수신]
+
+
+-----------------------------------------------------------------------------------------------------------------
+
+                  ## Attribute Weight 
+-Weight값은 Cisco전용 Command이므로 다른 밴더사의 Router에는 존재하지 않는 속성이다.
+
+-Weight값은 출력경로 정책시 사용되는 속성값이며 기본값은 0으로 설정되어지며
+  자신이 BGP로 광고한 네트워크 정보에 대해서는 32768값을 갖게된다.
+
+-Weight값이 큰경로가 우선한다.
+
+-Weight값은 자신의 경로만 변경이 가능하며 다른 BGP Peer에게 전파되지 않는 속성값이다.
+
+-Weight값은 하나의 AS에 하나만 적용 권장
+
+
+EX1) 아래의 조건에 맞게 Attribute를 설정하시오
+ .AS 13의 R2는 11.11.11.11/32 네트워크 정보는 R3을 경유하여 통신해야 한다.
+
+     # R2
+access-list 11 permit 11.11.11.11  0.0.0.0
+!
+route-map WEIGHT permit 10
+ match ip address 11
+ set weight 1000
+!
+route-map WEIGHT permit 20
+!
+router bgp 13
+ neighbor 13.13.23.3 route-map WEIGHT in
+!
+
+          정보 확인
+
+R2# show ip bgp
+    Network          	Next Hop            Metric LocPrf Weight 	Path
+*> 11.11.11.11/32   	13.13.23.3                                1000 	1013 i	<---- Weight = 1000 : Weight값이 큰경로가 우선
+*                   	13.13.21.1        	    0      	          0 	1013 i	<---- Weight = 0
+
+*  33.33.33.33/32   	13.13.21.1                         	          0 	1013 i
+*>                  	13.13.23.3          	    0    	          0 	1013 i
+
+*  44.44.44.44/32   	13.13.21.1                        	          0 	1013 i
+*>                  	13.13.23.3                       	          0 	1013 i
+
+*  55.55.55.55/32   	13.13.21.1                       	          0 	1013 i
+*>                  	13.13.23.3                      	          0 	1013 i
+            ------------------ 중간 생략 ------------------
+
+
+
+
+
+                    ######### 정보 확인 후 Weight 설정 삭제 #########
+
+    # R2
+router bgp 13
+ no neighbor 13.13.23.3 route-map WEIGHT in
+!
+
+
+          정보 확인
+
+R2# show ip bgp
+    Network          	Next Hop            Metric LocPrf Weight 	Path
+*> 11.11.11.11/32   	13.13.23.3                                    0 	1013 i	<---- Weight = 0
+*                   	13.13.21.1        	    0                 0 	1013 i	<---- Weight = 0
+
+
+-----------------------------------------------------------------------------------------------------------------
+
+                   ## Local-Preference
+
+-출력경로 정책이며 Weight값이 동일할경우 적용되는 Attribute이다.
+
+-Local-Preference는 eBGP로는 전파되지 않으며 동일 AS내의 iBGP까지만 전파된다. 
+  Default 값은 100을 사용하며  Local-Preference값이 큰 경로가 우선한다.
+
+
+EX2) 아래의 조건에 맞게 Attribute를 설정하시오
+ .AS 13의 R2는 11.11.11.11/32 네트워크 정보는 R1을 경유하여 통신해야 한다.
+ .AS 13의 R2는 33.33.33.33/32 네트워크 정보는 R3을 경유하여 통신해야 한다.
+
+     # R2
+access-list 11 permit 11.11.11.11  0.0.0.0
+access-list 33 permit 33.33.33.33  0.0.0.0
+!
+route-map LOCAL_PRE_R1 permit 10
+ match ip address 11
+ set local-preference 300
+!
+route-map LOCAL_PRE_R1 permit 20
+!
+route-map LOCAL_PRE_R3 permit 10
+ match ip address 33
+ set local-preference 400
+!
+route-map LOCAL_PRE_R3 permit 20
+!
+router bgp 13
+ neighbor 13.13.21.1 route-map LOCAL_PRE_R1 in
+ neighbor 13.13.23.3 route-map LOCAL_PRE_R3 in
+!
+
+       정보 확인
+
+R2# show ip bgp
+   Network          	Next Hop                Metric LocPrf Weight Path
+*  11.11.11.11/32   	13.13.23.3                             	0 1013 i	<--- Local-preference = Default (100)
+*>                  	13.13.21.1                     0    300      	0 1013 i	<--- Local-preference = 300 (큰경로가 우선한다.)
+
+*  33.33.33.33/32   	13.13.21.1                             	0 1013 i	<--- Local-preference = Default (100)
+*>                  	13.13.23.3                     0    400      	0 1013 i	<--- Local-preference = 400 (큰경로가 우선한다.)
+
+*  44.44.44.44/32   	13.13.21.1                             	0 1013 i
+*>                  	13.13.23.3                             	0 1013 i
+
+*  55.55.55.55/32   	13.13.21.1                             	0 1013 i
+*>                  	13.13.23.3                             	0 1013 i
+
+
+
+
+                    ######### 정보 확인 후 Local-preference 설정 삭제 #########
+
+
+     # R2
+router bgp 13
+ no neighbor 13.13.21.1 route-map LOCAL_PRE_R1 in
+ no neighbor 13.13.23.3 route-map LOCAL_PRE_R3 in
+!
+
+       정보 확인
+
+R2# show ip bgp
+   Network          	Next Hop                Metric LocPrf Weight Path
+*  11.11.11.11/32   	13.13.23.3                             	0 1013 i	<--- Local-preference = 0
+*>                  	13.13.21.1                     0           	0 1013 i	<--- Local-preference = 0
+
+*  33.33.33.33/32   	13.13.21.1                             	0 1013 i	<--- Local-preference = 0
+*>                  	13.13.23.3                     0           	0 1013 i	<--- Local-preference = 0
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------------------------------------------------
+
+                   ## AS-Path
+
+-출력경로 정책이며  Weight , Local-Preferenc값이 동일하경우 적용되는 Attribute이다.
+
+-BGP는 기본적으로 자신이 거쳐온  AS를 기록을 실시하게된다.
+  거쳐온 AS가 짧은 경로를 우선적으로 사용하게된다.
+
+-AS-Path를 붙여서 다른 경로를 최적경로로 선출할수 있다 (단 기존의 AS-Path를 삭제할수는 없다.)
+
+EX3) 아래의 조건에 맞게 Attribute를 설정하시오
+ .AS 13의 R2는 44.44.44.44/32 네트워크 정보는 R1을 경유하여 통신해야 한다.
+ .AS 13의 R2는 55.55.55.55/32 네트워크 정보는 R3을 경유하여 통신해야 한다.
+
+    # R2
+access-list 44 permit 44.44.44.44  0.0.0.0
+access-list 55 permit 55.55.55.55  0.0.0.0
+!
+route-map AS-PATH_R1 permit 10
+ match ip address 44
+ set as-path prepend 900 800
+!
+route-map AS-PATH_R1 permit 20
+!
+route-map AS-PATH_R3 permit 10
+ match ip address 55
+ set as-path prepend 900 800
+!
+route-map AS-PATH_R3 permit 20
+!
+router bgp 13
+ neighbor 13.13.23.3 route-map AS-PATH_R1 in
+ neighbor 13.13.21.1 route-map AS-PATH_R3 in
+!
+
+         정보 확인
+
+R2# show ip bgp
+   Network          	Next Hop                Metric LocPrf Weight Path
+*> 11.11.11.11/32   	13.13.23.3                             	0 1013 i
+*                   	13.13.21.1                     0             	0 1013 i
+
+*> 33.33.33.33/32   	13.13.21.1                             	0 1013 i
+*                   	13.13.23.3                     0             	0 1013 i
+
+*> 44.44.44.44/32   	13.13.21.1                             	0 1013 i		<--- AS-Path= 1013  (짧은 경로가 우선)
+*                   	13.13.23.3                             	0 900 800 1013 i	<--- AS-Path = 900 800 1013
+
+*  55.55.55.55/32   	13.13.21.1                             	0 1013 i
+*>                  	13.13.23.3                             	0 1013 i
+
+
+
+
+
+
+
+                    ######### 정보 확인 후 AS-Path 설정 삭제 #########
+
+
+    # R2
+router bgp 13
+ no neighbor 13.13.23.3 route-map AS-PATH in
+!
+
+
+------------------------------------------------------------------------------------------------------------------
+
+                   ## Origin Code
+
+-출력경로 정책이며 Weight , Local-preference , AS-Path값이 동일할경우
+  Origin Code값에 따라 최적경로를 선출하게된다.
+
+-Origin Code는 i > e > ? 순으로 우선순위를 정하게된다.
+ . i 	= BGP Process에서 'Network' command를 사용하여 업데이트 받은 정보
+ . e 	= EGP Protocol을 사용하여 업데이트 받은 정보  (EGP는 사용되지 않는 Protocol)
+ . ? 	= 외부 정보를 재분배하여 업데이트 받은 정보  (? = Incomplete)
+
+
+EX4) 아래의 조건에 맞게 Attribute를 설정하시오
+ .AS 13의 R2는 44.44.44.44/32 네트워크 정보는 R1을 경유하여 통신해야 한다.
+
+    # R2
+access-list 44 permit 44.44.44.44  0.0.0.0
+!
+route-map ORIGIN permit 10
+ match ip address 44
+ set origin incomplete
+!
+route-map ORIGIN permit 20
+!
+router bgp 13
+ neighbor 13.13.23.3 route-map ORIGIN in
+!
+
+          정보 확인
+
+R2#show ip bgp 
+   Network          	Next Hop              Metric  LocPrf  Weight  Path
+*> 11.11.11.11/32   	13.13.23.3                             	0  1013 i
+*                   	13.13.21.1               0             	0  1013 i
+
+*> 33.33.33.33/32   	13.13.21.1                             	0  1013 i
+*                   	13.13.23.3               0             	0  1013 i
+
+*> 44.44.44.44/32   	13.13.21.1                             	0  1013 i	<--- i경로가 ?경로보다 우선
+*                   	13.13.23.3                             	0  1013 ?	<--- ?경로보다 i경로가 우선
+
+*  55.55.55.55/32   	13.13.21.1                             	0  1013 i
+*>                  	13.13.23.3                             	0  1013 i
+
+
+
+
+
+                    ######### 정보 확인 후 Origin code 설정 삭제 #########
+
+    # R2
+router bgp 13
+ no neighbor 13.13.23.3 route-map ORIGIN in
+!
+
+
+
+------------------------------------------------------------------------------------------------------------------
+
+
+                   ## MED (Multi-Exit Discriminator)
+
+-입력경로정책이며 Weight , Local-preference , AS-Path , Origin Code값이 동일할경우
+  사용되어지는 Attribute이며 작은 MED경로가 우선다
+
+-입력경로정책 이며 BGP의 Metric이라고 불리운은 속성값이다. (IGP의 Meric값을 사용)
+
+
+*BGP는 자신의 Local Network가 아닌 네트워크 정보를 
+ 자신이 'Network' commmand사용하여 업데이트가 가능하다.
+
+*MED는 iBGP간에 MED값이 변경없이 업데이트되어진다.
+
+*MED는 iBGP로 업데이트 받은 네트워크 정보는 eBGP로 MED값이 0으로 전파
+
+*MED는 자신이 'Network' command로 업데이트한 네트워크 정보는 IGP의 Metric값이 그대로 전파되어진다.
+
+
+
+EX5) 아래의 조건에 맞게 Attribute를 설정하시오
+ .AS 13의 R2는 55.55.55.55/32 네트워크 정보는 R3을 경유하여 통신해야 한다.
+
+     # R2
+access-list 55 permit 55.55.55.55  0.0.0.0
+!
+route-map MED permit 10
+ match ip address 55
+ set metric 1234
+!
+route-map MED permit 20
+!
+router bgp 13
+ neighbor 13.13.21.1 route-map MED in
+!
+
+          정보 확인
+
+R2#show ip bgp 
+    Network          	Next Hop              Metric  LocPrf  Weight Path
+*> 11.11.11.11/32   	13.13.23.3                             	0  1013 i
+*                   	13.13.21.1                   0             	0  1013 i
+*> 33.33.33.33/32   	13.13.21.1                             	0  1013 i
+*                   	13.13.23.3                   0             	0  1013 i
+*> 44.44.44.44/32   	13.13.21.1                             	0  1013 i
+*                   	13.13.23.3                             	0  1013 i
+*  55.55.55.55/32   	13.13.21.1               1234             	0  1013 i
+*>                  	13.13.23.3                             	0  1013 i
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
