@@ -1,0 +1,167 @@
+EX1) 아래의 조건에 맞게 SW1 , SW2를 설정하시오
+ .SW1만 VLAN을 생성할수 있으며 SW2는 VLAN을 생성할수 없어야 한다. (VTP Domain = soldesk , VTP Password = sol1234)
+ .SW1에 연결된 PC1 , PC2는 VLAN 10에 포함되어야 한다.
+ .SW2에 연결된 PC3 , PC4는 VLAN 10에 포함되어야 한다.
+ .PC는 Switch에 연결시 바로 통신이 가능해야 한다. (단 Switch연결시 Port가 Down처리되어야 한다.)
+ .R1의 FastEthernet 0/0에 "200.20.x.251" IP 주소를 할당하시오
+ .R2의 FastEthernet 0/0에 "200.20.x.252" IP 주소를 할당하시오
+ .모든 PC는 R1 , R2의 Gateway로 통신이 가능해야 한다.
+ .VLAN 10에 대해서 SW1이 Root-bridge로 동작해야한다.
+ .SW1과 SW2가 연결된 Fa0/21 , Fa0/22 Port는 STP에 의한 Block port없이 통신이 가능해야 한다.
+
+-R1 Hostname = GW1
+-R2 Hostname = GW2
+
+-PC1 , PC2 , PC3 , PC4  (X = PC 번호)
+ # IP	: 200.20.x.X
+ # S/M	: 255.255.255.0
+ # G/W	: 200.20.x.254
+
+
+
+         정보 확인
+
+PC1> ping 200.20.x.2
+PC1> ping 200.20.x.3
+PC1> ping 200.20.x.4
+PC1> ping 200.20.x.251
+PC1> ping 200.20.x.252
+
+PC2> ping 200.20.x.1
+PC2> ping 200.20.x.3
+PC2> ping 200.20.x.4
+PC2> ping 200.20.x.251
+PC2> ping 200.20.x.252
+
+PC3> ping 200.20.x.1
+PC3> ping 200.20.x.2
+PC3> ping 200.20.x.4
+PC3> ping 200.20.x.251
+PC3> ping 200.20.x.252
+
+PC4> ping 200.20.x.1
+PC4> ping 200.20.x.2
+PC4> ping 200.20.x.3
+PC4> ping 200.20.x.251
+PC4> ping 200.20.x.252
+
+=============================================================================================================================
+
+EX2) 아래의 조건에 맞게 R1 , R2 , R3을 설정하시오
+ .각 Router에 Loopback 0을 생성한후 "100.10.X.X/24" IP 주소를 할당하시오 (X = Router 번호)
+ .R3에 Loopback 1을 생성한후 "211.241.228.3" IP 주소를 할당하시오
+ .R1 <---> R2 WAN 구간에 "199.210.10.0/30" IP 주소를 할당하시오
+ .R2 <---> R3 WAN 구간에 "199.210.10.4/30" IP 주소를 할당하시오
+
+
+
+
+
+        정보 확인
+
+R1# show ip route
+R1# ping 199.210.10.2
+
+
+R2# show ip route
+R2# ping 199.210.10.6
+
+
+R3# show ip route
+R3# ping 199.210.10.1
+R3# ping 199.210.10.5
+
+
+=============================================================================================================================
+
+EX3) 아래의 조건에 맞게 R1 , R2 , R3을 설정하시오
+ .EIGRP Routing Protocol을 사용하여 모든 네트워크 환경에서 통신되도록 설정하시오
+ .AS = 419 , 자동 요약 기능은 사용하지 않는다.
+ .EIGRP 라우팅 업데이트가 필요한 Interface로만 OSPF Packet이 송신되어야 한다.
+ .R1 , R2의 FastEthernet 0/0에 포함된 네트워크도 EIGRP에 포함되어야 한다.
+
+
+
+        정보 확인
+
+R1# show ip eigrp neighbor	[인접성 1개 연결 확인]
+R1# show ip route  	[R3의 Lo0 , Lo1 네트워크 정보 확인]
+
+R2# show ip eigrp neighbor	[인접성 1개 연결 확인]
+R2# show ip route  	[R3의 Lo0 , Lo1 네트워크 정보 확인]
+
+R3# show ip eigrp neighbor	[인접성 2개 연결 확인]
+R3# show ip route  	[R1 , R2의 내부 네트워크 정보 확인]
+
+
+
+
+
+
+
+
+
+
+
+=============================================================================================================================
+
+EX3) 아래의 조건에 맞게 R1 , R2에서 HSRP를 구성하시오
+ .PC1 , PC2에 대해서 R1이 Primary Gateway로 동작하며 R1장애 발생시 R2가 Gateway역할을 수행해야 한다.
+ .R1 장애 복구후 60초이후 Active 권한을 다시 수행해야 한다.
+ .Primary Gateway와 외부네트워크 연결구간 (WAN)장애 발생시 R2가 Gateway역할을 수행해야 한다.
+
+ .PC3 , PC4에 대해서 R2가 Primary Gateway로 동작하며 R1장애 발생시 R1이 Gateway역할을 수행해야 한다.
+ .R2 장애 복구후 60초이후 Active 권한을 다시 수행해야 한다.
+ .Primary Gateway와 외부네트워크 연결구간 (WAN)장애 발생시 R1이 Gateway역할을 수행해야 한다.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

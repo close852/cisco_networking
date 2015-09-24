@@ -1,0 +1,16 @@
+
+	#R1
+interface Tunnel13
+ ip address 100.10.13.1 255.255.255.0
+ tunnel source 13.13.9.1
+ tunnel destination 13.13.8.3
+!
+
+
+	#R3
+interface Tunnel13
+ ip address 100.10.13.3 255.255.255.0
+ tunnel source 13.13.8.3
+ tunnel destination 13.13.9.1
+!
+

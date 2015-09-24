@@ -1,0 +1,301 @@
+                              ### HSRP (Hot Standby Router Protocol)
+
+-Cisco에서 개발한  Gateway이중화 Protocol (표준 : VRRP)
+
+-내부망에서 망의 안정성을 보장하기위해 두개의 Gateway를 사용하여 네트워크를 구성
+ : 내부 네트워크의 통신 장비는 Primary Gateway를 경유하여 외부 네트워크로 통신한다.
+    만약 Gateway에 장애 발생시 대기하는 Backup Gateway를 사용하여 외부 네트워크로 통신하는 기능
+
+
+-HSRP는 Active Router와 Standby Router를 사용하여 Gateway 이중화를 구성한다.
+
+-HSRP는 Virtual-Router를 생성하며 내부망에서 외부로 통신시 모든 트래픽은
+  Virtual-Router에게 전송되며 Active Router가 Virtual-Router의 권한을 수행하며
+  Standby Router는 대기하다가 Active Router에 장애 발생시 Virtual-Router의 권한을 수행한다.
+
+-Active Router 	: HSRP에서 Primary로 동작하는 Router를 의미
+
+-Standby Router 	: HSRP에서 Backup으로 동작하는 Router를 의미
+
+-자신의 내부망에서 HSRP를 사용확인
+ : HSRP는 고정 MAC-address를 사용  : 00-00-0C-07-AC-[group number]
+
+-HSRP Hello-Interval = 3초
+-HSRP Dead-Interval = 10초
+-Multicast : 224.0.0.2 (All Router)
+-UDP 1985
+
+
+-HSRP 동작상태
+
+ .Init State
+  : HSRP의 시작단계이며 HSRP가 동작하지 않는상태이다.
+
+ .Learning State
+ : Hello를 송신하며 Virtual-IP를 찾는 상태
+
+ .Listening State
+ : Hello를 송/수신이 이루어지며 Virtual-IP를 정의
+
+ .Speak State
+ : Hello를 송/수신 주기적으로 교환되어지는 상태이며 Active , Standby를 비교하는 상태
+
+ .Standby State
+ : 상대방 Routerd의 우선순위에 의해서 Standby로 선출된 Router
+
+ .Active State
+ : 상대방 Routerd의 우선순위에 의해서Active로 선출된 Router
+
+
+
+
+
+==================================================================================================================
+
+
+-Dynamips 실행후 R1 ~ R5 , SW1 접속후 HSRP Pre-config 설정 실시
+
+-R1 , R3	= Gateway
+-R4 , R5	= PC
+-R2	= 외부 망
+
+
+     # R1
+router eigrp 100
+ no auto-summary
+ network 13.13.1.0  0.0.0.255
+ network 13.13.9.0  0.0.0.255
+ network 150.1.13.0  0.0.0.255
+ passive-interface fastethernet 0/1
+!
+
+     # R2
+router eigrp 100
+ no auto-summary
+ network 13.13.2.0  0.0.0.255
+ network 13.13.9.0  0.0.0.255
+ network 13.13.12.0  0.0.0.255
+!
+
+     # R3
+router eigrp 100
+ no auto-summary
+ network 13.13.3.0  0.0.0.255
+ network 13.13.9.0  0.0.0.255
+ network 150.1.13.0  0.0.0.255
+ passive-interface fastethernet 0/1
+!
+
+           정보 확인
+
+R1# show ip eigrp neighbor	[인접성 1개 확인]
+
+R2# show ip eigrp neighbor	[인접성 2개 확인]
+
+R3# show ip eigrp neighbor	[인접성 1개 확인]
+
+
+
+
+R1# show ip route
+     13.0.0.0/24 is subnetted, 5 subnets
+C       13.13.1.0 is directly connected, Loopback0
+D       13.13.2.0 [90/2297856] via 13.13.9.2, 00:00:02, Serial1/0
+D       13.13.3.0 [90/2809856] via 13.13.9.2, 00:00:01, Serial1/0
+C       13.13.9.0 is directly connected, Serial1/0
+D       13.13.12.0 [90/2195456] via 13.13.9.2, 00:00:02, Serial1/0
+     150.1.0.0/24 is subnetted, 1 subnets
+C       150.1.13.0 is directly connected, FastEthernet0/1
+
+
+R2# show ip route
+     13.0.0.0/24 is subnetted, 5 subnets
+D       13.13.1.0 [90/2297856] via 13.13.9.1, 00:00:04, Serial1/0.123
+C       13.13.2.0 is directly connected, Loopback0
+D       13.13.3.0 [90/2297856] via 13.13.9.3, 00:00:04, Serial1/0.123
+C       13.13.9.0 is directly connected, Serial1/0.123
+C       13.13.12.0 is directly connected, FastEthernet0/1
+     150.1.0.0/24 is subnetted, 1 subnets
+D       150.1.13.0 [90/2172416] via 13.13.9.3, 00:00:04, Serial1/0.123
+                   [90/2172416] via 13.13.9.1, 00:00:04, Serial1/0.123
+
+R3# show ip route
+     13.0.0.0/24 is subnetted, 5 subnets
+D       13.13.1.0 [90/2809856] via 13.13.9.2, 00:00:05, Serial1/0
+D       13.13.2.0 [90/2297856] via 13.13.9.2, 00:00:05, Serial1/0
+C       13.13.3.0 is directly connected, Loopback0
+C       13.13.9.0 is directly connected, Serial1/0
+D       13.13.12.0 [90/2195456] via 13.13.9.2, 00:00:05, Serial1/0
+     150.1.0.0/24 is subnetted, 1 subnets
+C       150.1.13.0 is directly connected, FastEthernet0/1
+
+
+
+
+==================================================================================================================
+
+                                ### HSRP 설정
+
+EX1) 아래의 조건에 맞게 Gateway 이중화를 구성하시오
+ .R1이 150.1.13.254 Virtual-IP에 대해서 Primary Gateway로 동작해야하며
+  R1에 장애 발생시 R3이 Backup Gateway로 동작해야한다.  [WAN 구간 장애 발생시 R3이 Active Router로 동작해야한다.]
+ .R3이 150.1.13.253 Virtual-IP에 대해서 Primary Gateway로 동작해야하며
+  R3에 장애 발생시 R1이 Backup Gateway로 동작해야한다.  [WAN 구간 장애 발생시 R1이 Active Router로 동작해야한다.]
+	
+-preempt
+ : Active Router가 활성화된상태에서 우선순위값에의해 Active 권한을 강제로 회수하는 기능
+
+
+     # R1	[Active]
+interface fastethernet 0/1
+ standby 1 ip 150.1.13.254
+ standby 1 priority 150	    : 우선순위값이 큰 Router가 Active Router로 선출 (Default = 100)
+ standby 1 preempt delay min 60  : 장애복구 60초후 Active권 한을 수행
+ standby 1 timer 1 3		    : HSRP Hello = 1초 , Hold = 3초로 변경 (Default = 3/10초)
+ standby 1 track serial 1/0 100	    : Serial 1/0 interface장애 발생시 우선순위값 100을 차감한다.
+ standby 2 ip 150.1.13.253
+ standby 2 priority 80
+ standby 2 timer 1 3
+ standby 2 preempt
+!
+
+     # R3	[Standby]
+interface fastethernet 0/1
+ standby 1 ip 150.1.13.254
+ standby 1 priority 80
+ standby 1 timer 1 3
+ standby 1 preempt 		   : R1 WAN구간 장애 발생시 우선순위값에의해 Active 권한을 강제회수하기위한 설정
+ standby 2 ip 150.1.13.253
+ standby 2 priority 150
+ standby 2 preempt delay min 60
+ standby 2 timer 1 3
+ standby 2 track serial 1/0 100
+!
+
+          정보 확인
+
+R1# show standby brief
+                       P indicates configured to preempt.
+                       |
+Interface Grp  Pri P 	State   	Active          	Standby	    	Virtual IP
+Fa0/1     1    150 P 	Active  	local           	150.1.13.3	    	150.1.13.254
+Fa0/1     2    80  P 	Standby 	150.1.13.3      	local  	    	150.1.13.253
+R1#
+
+
+R3# show standby brief
+                       P indicates configured to preempt.
+                       |
+Interface Grp  Pri P	State   	Active	   	Standby	  	Virtual IP
+Fa0/1     1    80  P	Standby 	150.1.13.1      	local           	150.1.13.254
+Fa0/1     2    150 P 	Active  	local           	150.1.13.1      	150.1.13.253
+
+
+
+
+                        #### 내부 네트워크에서 외부 네트워크로의 통신 확인
+
+
+R4# ping 13.13.12.2
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 13.13.12.2, timeout is 2 seconds:
+.!!!!
+Success rate is 80 percent (4/5), round-trip min/avg/max = 44/46/52 ms
+
+
+R5# ping 13.13.12.2
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 13.13.12.2, timeout is 2 seconds:
+.!!!!
+Success rate is 80 percent (4/5), round-trip min/avg/max = 40/47/52 ms
+
+
+
+
+R4# traceroute 13.13.12.2	[장애 발생전 경로]
+  1 150.1.13.1 32 msec 28 msec 28 msec		R1 <---	R4(PC)
+  2 13.13.9.2 44 msec *  36 msec	 R2 <---	R1 <---	R4(PC)
+
+
+R5# traceroute 13.13.12.2	[장애 발생전 경로]
+  1 150.1.13.3 44 msec 48 msec 44 msec		R3 <---	R5(PC)
+  2 13.13.9.2 44 msec *  36 msec	 R2 <---	R3 <---	R5(PC)
+
+
+
+
+
+
+
+
+
+
+
+                        #### Gateway 장애 발생시 동작 과정 확인
+
+
+R4# ping 13.13.12.2 repeat 1000
+Type escape sequence to abort.
+Sending 1000, 100-byte ICMP Echos to 13.13.12.2, timeout is 2 seconds:
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+R1(config)# interface fastethernet 0/1
+R1(config-if)# shutdown	<------- 장애 발생
+
+
+
+R4# ping 13.13.12.2 repeat 1000
+Type escape sequence to abort.
+Sending 1000, 100-byte ICMP Echos to 13.13.12.2, timeout is 2 seconds:
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!	<----  경로 변경후 통신 확인
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+R4# traceroute 13.13.12.2	[장애 발생후 경로]
+  1 150.1.13.3 32 msec 32 msec 32 msec		R3 <---	R4(PC)
+  2 13.13.9.2 40 msec *  40 msec	 R2 <---	R3 <---	R4(PC)
+
+
+
+
+
+
+R1(config)# interface fa0/1
+R1(config-if)# no shutdown	<--- 장애 복구
+
+*Mar  1 00:28:14.111: %LINK-3-UPDOWN: Interface FastEthernet0/1, changed state to up		: 장애 복구 시간
+
+*Mar  1 00:28:19.131: %HSRP-5-STATECHANGE: FastEthernet0/1 Grp 1 state Speak -> Standby	: Standby 전환
+
+*Mar  1 00:29:14.123: %HSRP-5-STATECHANGE: FastEthernet0/1 Grp 1 state Standby -> Active	: Active 수행
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
