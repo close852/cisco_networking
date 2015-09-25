@@ -1,0 +1,594 @@
+                                         ### VPN (Virtual Privite Network)
+
+
+-VPN
+ : 사설네트워크(자사망의 장비가 통신을 위해 독립적으로 구성되고 유지되는 네트워크)에
+   공중 네트워크(공중망) 액세스를 가지고 접속하는 것을 의미하며, 
+   인터넷과 같은 공중망을 이용 VPN 터널을 경유하여 안전하게 데이터를 전송하는 기능을 의미한다. 
+
+-이전에는 전용회선을 사용하여 네트워크와 네트워크를 연결하여 통신하였으나
+  넓은 국토를 가진 나라 또는 많은 지사들이 연결되어야 하는 네트워크 환경에서
+  전용회선을 사용하게되면 높은 유지비용의는 문제가 발생
+
+-미리 구축되어있는 공중망에 사설 네트워크들을 연결하여 사용하여 통신하므로써 유지비용을 절감할수 있다.
+
+
+
+==================================================================================================================
+
+                  ## GRE (Generic Routing Encapsulation)
+
+-전용회선 : 네트워크와 네트워크를 ISP업체를 선정하여 직접 연결하는 방식
+ .장점 : 높은 대역폭을 지원하며 보안에 강하다.
+ .단점 : 높은 유지비용
+
+
+-VPN : 미리 구축되어져있는 공중망에 사설 네트워크를 연결하는 방식
+ .장점 : 낮은 비용으로 일정량의 대역폭을 사용할수 있다.
+ .단점 : 보안에 취약하며 높은 대역폭을 사용하지 못한다.
+
+
+-GRE
+ .CISCO에서 개발한 Tunneling Protocol로써 가상의 Point-to-point환경으로 연결하는 기능이다
+  [Multipoint 환경으로 구성이 가능하지만 여래개의 Protocol을 연동하여 구축해야한다.]
+ .공중망에 사설 네트워크를 광고하지 않고 통신하는 기술로 두 Tunnel-End Point에서 가상의 경로를 생성하게되면 
+   외부 환경에서는 Tunnel로 송/수신되는 정보를 확인할 수 없으며 빠른연결과 통신이 보장되는 기능
+ .IP , TCP/UDP 통신만가능하며 보안 기능를 지원하지않는다
+
+
+
+
+
+==================================================================================================================
+
+                  ## 네트워크 상에서의 위협과 보안 서비스
+
+-네트워크 상에서의 공격은 수동형 공격과 능동형 공격으로 구분할수 있다.
+  수동형 공격은 실제 트래픽을 생성하지 않지만 능동형 공격은 네트워크 상에서
+  Packet을 생성하거나 위/변조를 하여 공격하는 방법이다.
+
+-수동형 공격 : Sniffing , Traffic engineering
+  : Sniffing은 트래픽을 훔쳐보는것을 말하며 Traffic engineering은 Sniffing을 기반으로하여
+    내용을 분석하여 네트워크의 구성이나 서버의 서비스 내용을 분석하는 기법이다.
+
+-능동형 공격 : Spoofing , MITM (Man-In-The-Middle)
+ : Spoofing은 공격자가 원하는 결과를 얻기위해서 Packet을 직접 생성하여 공격하는 기법으로 
+   대표적인 방법으로 DoS등이 있다.
+
+ : MITM은 Host A가 전송한 데이터를 중간에서 가로채어 위/변조를 실시하여 Host B에게 전송하여
+   Host A와 Host B양쪽을 모두 속이는 기법이다.
+
+-이러한 공격으로부터 정보를 보호하기위해서 제공되는 보안의 3대요소
+ .기밀성 : 전송하는 데이터를 수신자만 확인할수 있도록 데이터를 암호화하는 기능
+ .무결성 : 전송하는 데이터가 전송도중 위/변조가 되는것을 방지하기위한 기능이며 
+              대표적인 기능으로는 HASH(MD5,SHA)알고리즘이있다.
+ .가용성 : 사용자가 필요로하는 서비스를 언제든 접속하여 사용가능 하도록 보장하는 기능 (Backup)
+
+
+
+
+==================================================================================================================
+
+                  ## IPsec (IP Security)
+
+-Internet Protocol Security는 인터넷을 통한 데이터 통신시 암호화 및 인증을 커버하는 보안 표준이다.
+ IPSec을 기반으로 하는 VPN 기술은 모든 외부로 송신되는 데이터를 encryption시키고
+ 입력되는 데이터를 decryption 하여 인터넷과 같은 공중망 네트워크를 전송매체 통신하는 기능
+
+-IPsec을 구현상의 관점에서 보면
+ .IP주소를 바탕으로 정책 수행을 담당하는 정책 엔진 (Policy Engine) 
+ .SA/Key를 담당하는 IKE(Internet Key Exchange) 엔진 (IKE Engine)
+ .AH/ESP 캡슐화를 담당하는 IPsec 엔진 (IPsec Engine) 
+ .IKE , IPsec 암호화 연산을 위한 알고리즘 엔진(Cryptolib Engine) 으로 구현및 관리가 이루어진다.
+
+
+-IPSec은 Transport Mode와 Tunnel Mode 2개의 encryption mode를 지원
+ .Transport Mode : IPsec을 사용하는 Client간 통신시 사용되며 IP Payload만 Encryptiong되며 
+                         IP Header는 암호화 되지 않는다. (End-to-end)
+
+ .Tunnel Mode : 두 개체간 한군데 이상이 보안 Gateway를 수행한다.
+                      IP Header 와 Payload 모두를 Encryptiong된후 IPsec Header와 새로운 IP Header가 추가된다.
+                      데이터를 수신한 장비는 각각의 패킷을 decrypt를 실시 (Gateway-to-Gateway , LAN-to-LAN , Site-to-site)
+
+-IPSec은 오직 Internet Protocol(IP)상에서 지원되기 때문에  다른 프로토콜에는 보안기능을 제공하지 않는다.
+ (IP환경의 Unicast Traffic에 대한 보안기능만 지원한다.)
+
+-IPSec은 데이터 송신자의 인증을 허용하는 AH (Authentication Header)와, 
+ 송신자의 인증 및 데이터 암호화를 함께 지원하는 ESP (Encapsulating Security Payload) 보안 서비스를 제공한다. 
+
+
+
+
+==================================================================================================================
+
+                                ### IKE (Internet Key Exchange)
+
+-IKE는 IETE에서 규정한 Key Negotiation 및 Key exchange Protocol로써 UDP500번을 사용하며 
+  IPsec의 세션연결을 맺는 SA(Security Assosiation)를 제어하기위한 Protocol이다.
+  공개된 공중망에서 Key를 생성하고 생성된 key를 교환하는 방식을 지정한다.
+
+-IKE SA는 자동적으로 Encryption 및 인증키를 negotiate하여 패킷을 교환하기전 VPN장치간에 가상의 Connection을 확립한다.
+  IPsec통신을 실시하는 경우, 모두 이 SA라고 하는 가상의 터널을 경유해 패킷을 송수신 하게된다
+  IKE를 사용하여 Key의 생성과 교환, 그리고, 안전성을 높이기 위해 Key의 정기적으로 갱신을 자동으로 실시하며
+  ISAKMP/Oakley/SKEME 프로토콜과 같은 별개의 키 프로토콜들을 사용할수 있다 (Cisco는 ISAKMP를 사용한다.)
+
+
+
+
+
+
+                 ## ISAKMP (Internet Security Association adn Key Management)
+
+-IKE 교환을 위한 메시지를 전달하는 프로토콜
+
+-ISAKMP의 중요한 목적중 하나는 Key의 생성과 전달에 있다. 
+  VPN 통신시 송신자와 수신자간 동일한 Key를 공유하고 이 Key를 사용하여
+  AH는 HASH알고리즘을 사용한 인증을 실시하고 ESP는 대칭키 알고리즘을 사용하여 암/복호화를 실시하게 된다.
+  SA는 이러한 인증 , 암호화 Key를 안전하게 공유할뿐만 아니라 AH ,ESP방식으로 통신할것인가를 판단하고
+  인증 알고리즘과 암호화 알고리즘 Key교환주기및 유효기간 , 통신시 Mode등의 속성들을 SA를 사용하여 공유할수 있다.
+  이때 이 SA를 자동관리하는 Protocol이 ISAKMP이다
+  (만약 SA를 사용하지 않고 이러한 기능들을 사용할경우에는 Manual-Key라는 방식을 사용하여 수동으로 입력해야 한다.)
+  ISAKMP는 Diffie-hellman방식의 Key교환 방식을 사용한다.
+
+
+
+
+      # SA(Security Association)
+
+-특정한 키로 암호화된 데이터는 해당 키를 사용해서 복호화가 가능하다. (대칭키 알고리즘 사용시: DES ,3DES, AES)
+  네트워크에서 하나의 개체가 암호화한 데이터를 다른 개체에서 복호화를 하기위해서는 두 개체는 암호화할 알고리즘을 
+  하나로 통일하여 사용해야하며 암호화및 복호화에 사용할 Key에 대해서 서로 공유하고 있어야 한다. 
+  이러한 논리적인 결합 또는 연결을 SA라고 하며 IPsec으로 암/복호화를 실시하기전에 미리 공유및 설정이 실시되어야 한다.
+
+-SA(Security Association)은 특정 VPN 터널과 관련된 security setting 그룹으로
+  VPN터널을 만들기 위해 요구되는 모든 보안 세팅을위한 기능을 모아 놓은 묶음을 의미한다.
+  각기 다른 SA들은 branch office들을 연결시키기 위해 만들어 진 것이며, 
+  안전한 remote management를 지원하고 지원되지 않는 traffic은 통과시키는 역할을 한다.
+  모든 SA들은 IPSec  gateway address나 destination network address등 
+  특정 encryption 방법을 교환하며 공유된 secrety 정보를 포함하고 있다. 
+
+-SA는 Phase-1 , Phase-2로 나누어진다.  (IKE-1 , IKE-2 로도 부른다.)
+
+-Phase-1 SA는 두 장비간 Security정보를 어떠한 방식으로 교환할지에 대한 동의를 준비하는 단계이며
+ 인증및 Phase 2의 메시지를 보호하기위한 세션 키를 협상하기위한 SA이다.
+ Phase-1 SA는 Phase-2 메시지를 보호하는데만 사용되며 IPsec트래픽을 보호하는데 사용되지 않는다.
+ Phase-1에서는 아래와 같은 정책을 설정해야하다.
+ .인증 방식	: Pre-Shared Key , RSA Encryption , RSA Signature
+ .암호화 알고리즘	: DES , 3DES , AES
+ .인증 알고리즘	: MD5 , SHA
+ .Key 교환 방식	: Diffie-Hellman Group (1 , 2 , 5)
+ .Key 갱신 기간	: Lifetime (60-86400sec)
+
+-Phase-2는 실제 전송되는 데이터를 보호하는 기능이며 전송할 데이터를 보호하기위한 AH , ESP Protocol을 정의한다.
+  Phase-2에서는 아래와 같은 정책을 설정해야하다.
+ .보호대상 트래픽	: ACL을 사용하여 보호할 트래픽 지정
+ .IPsec Protocol	: AH , ESP
+ .암호화 알고리즘	: DES , 3DES , AES
+ .인증 알고리즘	: MD5 , SHA 
+
+
+
+
+
+==================================================================================================================
+
+                  ## AH(Authentication Header)
+
+-AH Protocol은 Protocol 51번을 사용하며 기밀성(암호화)은 보장하지 않으며 
+  IP Header에 포함된 데이터의 무결성과 데이터 인증 및 보호를 제공을위해서 사용된다. 
+  (여기서의 인증은 세션에 대한 인증이 아닌 Packet의 무결성을 의미)
+  즉 데이터를 확인할 수는 있지만 위조/변조는 할수없다.
+
+-AH  프로토콜은 일부를 제외한 (TTL , TOS) IP Header전체를 인증하기 때문에 
+ Header 조작이 불가능하므로 NAT (Network Address Translation) 환경에서 적용할수 없다
+ (NAT는 IP Header의 Source Address를 변경하는 기능이므로 사용할수 없다.)
+
+
+-인증 알고리즘은 MD5와 SHA등의 HASH알고리즘을 사용한다.
+
+    # Transport mode 사용시 AH Header 위치
+
+       | IP Header | TCP Header | DATA | - 원본
+
+       | IP Header | AH Header | TCP Header | DATA | - AH사용시
+       |--------------- Authentication --------------|
+
+
+
+    # Tunel mode 사용시 AH Header 위치
+
+       | IP Header | TCP Header | DATA | - 원본
+
+       | New IP Header | AH Header | IP Header | TCP Header | DATA |
+       |----------------------- Authentication ----------------------|
+
+
+
+==================================================================================================================
+
+
+                  ## ESP (Encapsulating Security Payload)
+
+ : ESP는 IPSec을 사용한 패킷의 암호화를 수행하기 위한 프로토콜이며 Protocol 50번을 사용한다.
+   암호화기능과 함께 인증되지 않은 데이터 스트림에 대한 공격을 막기 위해 AH의 모든 기능이 포함돼 있다. 
+   ESP만으로도 암호화및 인증을 실시할수 있지만 보안의 강도를 높일때에는 AH와 병행사용이 가능하다.
+   이전에는 AH와 ESP를 병행하여 상용했지만 병행사용할경우 throughput이 증가하여 지금은 병행사용을 하지않는것이 일반적이다.
+
+
+-ESP Header의 위치
+
+-Transport mode사용시 ESP Header의 위치
+
+       | IP Header | TCP Header | DATA | - 원본
+
+       | IP Header | ESP Header | TCP Header | DATA | ESP Trailer | ESP Authentication |
+                                        |--------------암호화-------------|
+                      |--------------------인증--------------------|
+
+
+
+-Tunne mode사용시 ESP Header의 위치
+
+       | IP Header | TCP Header | DATA | - 원본
+
+       | New IP Header | ESP Header | IP Header | TCP Header | DATA | ESP Trailer | ESP Authentication |
+                                               |----------------암호화------------------|
+                             |------------------------------인증-----------------|
+
+
+
+
+-AH와 ESP에 의해 사용되는 인증 알고리즘은 HMAC-MD5와 HMAC-SHA1이다. 
+
+-암호화는 Block Sypher와 Stream Sypher를 사용할수 있다.
+
+
+==================================================================================================================
+
+
+                  ## 암호화 방식
+
+-VPN은 비밀키(Private Key) 방식과 공개키(Public Key) 방식을 사용하여 암호화를 한다.
+ 실제 통신시에는 비밀키 방식을 사용하여 통신하며 비밀키방식의 키를 교환할때 공개키방식을 사용한다.
+
+-비밀키 (Private Key) 방식 (DES , 3DES , AES) : 암호화키와 복호화키가 동일하다.
+   .DES	: 이전에 가장 대표적인 공통열쇠암호 알고리즘으로,  IBM에 의해서 개발, 제안된 암호 알고리즘으로
+               Sender와 receiver가  각각의 똑 같은 비밀키를 알아야만 커뮤니케이션이 가능한 Encryption 기능
+               56bit의 길이에서 Key를 생성하므로 Key값을 찾아내기가 힘들다.
+
+   .3DES	: DES를 3번 Rouding실시 , DES를 이용하여 쉽게 구현되며 
+                DES보다 훨씬 더 안전한 데이터 전송을 제공하기 위해 168 bit key를 사용한다.
+                3DES는 또한 보안 전문가들에 의해 사실상 암호해독이 불가능한 것으로 인식되고 있으며,
+                3DES를 위해서는 훨씬 많은 양의 processing power를 필요로한다.
+
+   .AES	: 128bit 블럭 단위로 암호화 , 사용되는 Key의 사이즈는 128bit, 192bit, 256bit가 사용한다
+               DES보다 암호화강도가 높으며 더 빠른처리가 가능하다.
+
+
+
+-공개키(Public Key) 방식 (RSA , Diffie-Hellman) : 암호화키와 복호화키가 다르다.
+     :암호화와는 별도의 복호화키가 존재하며 암호화한 키로는 복호화를 할수 없고 
+      공개키로도 복호화는 할수 없다 즉 한쌍으로 되어있는 개인키로만 복호화가 가능하다.
+      작은 양의 Data를 암호화 복호화하는데는 문제가 없지만 큰 데이터를 사용할때는 문제가 발생
+      일반적으로 통신은 비밀키 방식을 사용하며 Key값을 변경할때 공개키 방식을 사용한다.
+
+
+-SHA-1 : MD5와 유사한구조로 설계되었으나 MD5보다 안정성면에서 더 좋다.
+            (160bit , 192bit , 256bit 길이의 출력)
+
+-SHA-2 :SHA2는 보다 높은 수준의 안전성이 요구되는 응용을 위해 만들어진 해쉬 알고리즘
+            (256비트, 384비트, 512비트 길이의 출력)
+
+
+
+
+
+
+
+
+=============================================================================================================================
+
+
+
+                  ## IPSec의 동작
+
+-IPSec의 동작의 흐름은 SA Phase1과 Phase2를 실시한후 IP Packet을 암호화,인증을 실시하여 통신하게 된다.
+
+-IKE(Phase1 , Phase2)
+ VPN은 패킷을 교환하기 전에 VPN 장비간에 VPN connection을 확립해야 한다.
+ 이 connection은 SA (Security Association) 라고 불리는 터널을 터널을 통해 패킷을 송수신 하게된다.
+ IPsec통신을 위한 SA를 생성하기 위해서는 IKE Protocol을 사용하여 SA를 제어한다.
+
+-IKE의 connection의, 안전성을 높이기 위해서 Phase과 Phase2의 2개 단계를 거쳐 SA가 구축되며
+ Phase1은 SA를 생성하기 위한 사전 준비가 된다.
+
+-Phase1 (SAKMP)
+ : Connection확립과 상대의 인증 (VPN Server간 인증을 위해서 1개가 생성되어진다.)
+   Phase2의 통신을 안전하게 실시하기위한 공개키생성 즉 ISAKMP SA의 확립ID를 교환한후 
+  Connection연결및 Diffie-hellman알고리즘을 사용하여 Key를 교환한다.
+  설정시에는 'Group' command를 사용하게되는데 Group 1 , 2 , 5을 사용할수있다
+
+-Phase2 (IPsec)
+ : IPsec 통신시에 사용하는 비밀키 생성및 IPsec 보안 Protocol의SA를 생성한다.
+   이 Phase2는 Phase1의 인증을 통하여 보호되어지며 역시 1개가 생성되어진다
+ .Phase2는 실제 통신할 데이터를 암호화 , 인증을 실시한다.
+  
+
+
+
+=============================================================================================================================
+
+
+
+
+
+
+                                  R2
+                                   |
+                               /      /
+                           /              /
+                       /                      /
+                   /                              /
+              S1/0.12                        S1/0.23
+                 |                                   |
+                R1                                 R3
+                 |                                   |
+                 |                                   |
+                 |                                   |
+                 |                                   |
+                R4                                 R5
+                 |                                   |
+           192.168.4.0/24                192.168.5.0/24
+
+
+EX) R4의 192.168.4.0/24와 R5의 192.168.5.0/24 네트워크간 통신시 정보보호가 실시되어져야 한다.
+
+   [Phase 1] = isakmp = 자동 키 알고리즘
+-인증방식		: 사전 인증방식 (사전 인증방식 , 인증서 방식 , RSA 인증)
+-암호화 알고리즘 	: 3DES (DES , 3DES , AES)
+-인증 알고리즘 	: MD5 (MD5 , SHA)
+-Key교환 알고리즘 	: Diffie-Hellman 2 (1,2,5)
+-Key교환 주기 	: 12시간
+
+   [Phase 2] = ipsec
+-암호화 통신 방식	: ESP
+-암호화 알고리즘	: AES
+-인증 알고리즘	: SHA-HMAC
+
+   # R1
+access-list 100 permit ip 192.168.4.0  0.0.0.255  192.168.5.0  0.0.0.255	<---정보 보호를 실시할 네트워크 범위 지정
+!
+crypto isakmp enable	<--- 자동키분배 알고리즘  enable
+!
+crypto isakmp policy 10	<--- Phase 1의 조건 설정
+ authentication pre-share	<--- 인증 방식 설정
+ encryption 3des 		<--- 암호화 알고리즘 설정
+ hash md5		<--- 인증 알고리즘 설정
+ group 2			<--- Key분배 알고리즘 (Key의 크기)설정
+ lifetime 86400		<--- Key 교환 주기 설정
+!
+crypto isakmp key 0 cisco address 13.13.8.3	<--- R1과Phase 1을 교환할  VPN 장비 주소 (R3의 주소)
+!
+crypto ipsec transform-set VPN esp-aes esp-sha-hmac 	<--- 실제 데이터를 암호화/인증할 알고리즘 선택
+!
+crypto map VPN_INT 10 ipsec-isakmp	<---- Phase 2의 암호화,인증 조건과 VPN장비 주소 , 보호할 주소 (ACL) 지정
+ set transform-set VPN		<--- 암호화/인증할 IPsec선택  
+ set peer 13.13.8.3			<--- R1과Phase 2을 교환할  VPN 장비 주소 (R3의 주소)
+ match address 100			<--- 보호할 주소 (ACL 100) 지정
+!
+interface serial 1/0.13		<--- IPsec 적용
+ crypto map VPN_INT
+!
+
+
+
+   # R3
+access-list 100 permit ip 192.168.4.0  0.0.0.255  192.168.5.0  0.0.0.255
+!
+crypto isakmp enable
+!
+crypto isakmp policy 10
+ authentication pre-share
+ encryption 3des 
+ hash md5
+ group 2
+ lifetime 86400
+!
+crypto isakmp key 0 cisco address 13.13.9.1
+!
+crypto ipsec transform-set VPN esp-aes esp-sha-hmac 
+!
+crypto map VPN_INT 10 ipsec-isakmp
+ set transform-set VPN
+ set peer 13.13.9.1
+ match address 100
+!
+interface serial 1/0.13
+ crypto map VPN_INT
+!
+
+            정보확인
+
+R4# ping 192.168.5.5  source 192.168.4.4
+
+
+R1# show crypto isakmp peers   [Phase-1 연결 확인]
+Peer: 13.13.8.3 Port: 500 Local: 13.13.9.1
+ Phase1 id: 13.13.8.3
+
+
+R3# show crypto isakmp peers   [Phase-1 연결 확인]
+Peer: 13.13.9.1 Port: 500 Local: 13.13.8.3
+ Phase1 id: 13.13.9.1
+
+
+
+
+R1# show crypto engine connections active   [Phase-2 암/복호화 확인]
+    ID Interface  Type  Algorithm           Encrypt  Decrypt  IP-Address
+     1 Se1/1.13   IPsec AES+SHA                   0         4  13.13.9.1	<--- 복호화된 데이터 (4개)
+     2 Se1/1.13   IPsec AES+SHA                   4         0  13.13.9.1	<--- 암호화된 데이터 (4개)
+ 1001 Se1/1.13   IKE   MD5+3DES                  0         0  13.13.9.1
+
+
+R3# show crypto engine connections active   [Phase-2 암/복호화 확인]
+    ID Interface  Type  Algorithm           Encrypt  Decrypt  IP-Address
+     1 Se1/1.13   IPsec AES+SHA                   0         4  13.13.8.3	<--- 복호화된 데이터 (4개)
+     2 Se1/1.13   IPsec AES+SHA                   4         0  13.13.8.3	<--- 암호화된 데이터 (4개)
+ 1001 Se1/1.13   IKE   MD5+3DES                  0         0  13.13.8.3
+
+
+
+
+
+
+
+==================================================================================================================
+
+               [조건]
+
+EX) R4의 192.168.4.0/24와 R5의 192.168.5.0/24 네트워크간 통신시 정보보호가 실시되어져야 한다.
+
+   [Phase 1] = isakmp = 자동 키 알고리즘
+-인증방식		: 사전 인증방식 (사전 인증방식 , 인증서 방식 , RSA 인증)
+-암호화 알고리즘 	: DES
+-인증 알고리즘 	: SHA
+-Key교환 알고리즘 	: Diffie-Hellman 2
+-Key교환 주기 	: 1시간
+
+   [Phase 2] = ipsec
+-암호화 통신 방식	: ESP
+-암호화 알고리즘	: AES
+-인증 알고리즘	: MD5-HMAC
+
+   # R1
+access-list 101 permit ip 192.168.4.0  0.0.0.255  192.168.5.0  0.0.0.255
+!
+crypto isakmp enable
+!
+crypto isakmp policy 10
+ authentication pre-share
+ encryption des 
+ hash sha
+ group 2
+ lifetime 3600
+!
+crypto isakmp key 0 cisco address 13.13.8.3
+!
+crypto ipsec transform-set VPN esp-aes esp-md5-hmac 
+!
+crypto map VPN_INT 10 ipsec-isakmp
+ set transform-set VPN
+ set peer 13.13.8.3
+ match address 101
+!
+interface serial 1/0.12
+ crypto map VPN_INT
+!
+
+
+   # R3
+access-list 101 permit ip 192.168.5.0  0.0.0.255  192.168.4.0  0.0.0.255
+!
+crypto isakmp enable
+!
+crypto isakmp policy 10
+ authentication pre-share
+ encryption des 
+ hash sha
+ group 2
+ lifetime 3600
+!
+crypto isakmp key 0 cisco address 13.13.9.1
+!
+crypto ipsec transform-set VPN esp-aes esp-md5-hmac 
+!
+crypto map VPN_INT 10 ipsec-isakmp
+ set transform-set VPN
+ set peer 13.13.9.1
+ match address 101
+!
+interface serial 1/0.23
+ crypto map VPN_INT
+!
+
+
+            정보확인
+
+R4# ping 192.168.5.5  source 192.168.4.4
+
+
+R1# show crypto isakmp peers   [Phase-1 연결 확인]
+
+R3# show crypto isakmp peers   [Phase-1 연결 확인]
+
+
+
+R1# show crypto engine connections active   [Phase-2 암/복호화 확인]
+
+R3# show crypto engine connections active   [Phase-2 암/복호화 확인]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=============================================================================================================================
+
+
+-Stop&Wait
+ .하나의 Packet을 송신한후 Ack가 수신되면 다음 Packet을 송신하는 방식이며
+  Timeout 시간안에 Ack가 수신되지 않거나 NAK (해당 데이터의 에러)가 감지되면 해당 Packet을 재전송하는 기능
+
+-Go-back-N
+ .다수의 Packet을 하나의 Group으로 전송한후 다수의 Ack를 수신하는 기능이며
+  Ack가 수신되지 않은 Packet부터 재전송하는 기능이다
+  즉 Ack를 기다리지 않고 데이터를 전송하며 Ack가 수신되지 않은 데이데에대해서 재전송하는 기능을 의미한다.
+
+-Sliding Window
+ .다수의 데이터를 연속으로 전송하며 송신측은 전송한 데이터를 저장하게된다.
+ 송신측은 Ack를 기다리지 않고 N개의 데이터를전송하게되는데 이 N이 윈도우 사이즈가된다.
+ 이 N개의 데이터를 연속으로 전송하는 기능을 Sliding Window라고 한다.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
