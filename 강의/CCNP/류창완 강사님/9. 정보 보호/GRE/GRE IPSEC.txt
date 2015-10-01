@@ -1,0 +1,55 @@
+access-list 101 permit gre host 13.13.8.3 host 13.13.9.1
+crypto isakmp en
+
+crypto isakmp policy 10
+ auth pre-share
+ en 3des
+ hash md5
+ group 2
+ lifetime 3600
+
+crypto isakmp key cisco address 13.13.8.3
+
+crypto ipsec transform-set VPN esp-aes esp-sha-hmac
+
+crypto map IPSEC 10 ipsec-isakmp
+ set peer 13.13.8.3
+ set transform-set VPN
+ match address 101
+
+interface tunnel 13
+ crypto map IPSEC
+
+
+
+
+
+====================================
+access-list 101 permit gre host 13.13.9.1 host 13.13.8.3
+crypto isakmp en
+
+crypto isakmp policy 10
+ auth pre-share
+ en 3des
+ hash md5
+ group 2
+ lifetime 3600
+
+crypto isakmp key cisco address 13.13.9.1
+
+crypto ipsec transform-set VPN esp-aes esp-sha-hmac
+
+crypto map IPSEC 10 ipsec-isakmp
+ set peer 13.13.9.1
+ set transform-set VPN
+ match address 101
+
+interface tunnel 13
+ crypto map IPSEC
+
+
+
+
+
+
+

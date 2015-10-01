@@ -1,0 +1,92 @@
+model = 2691
+autostart = False
+ghostios = true
+sparsemem = true
+mmap = False
+
+[localhost]
+port = 7200
+udp = 10000
+workingdir = ..\tmp\
+
+
+    [[2691]]
+        image = ..\ios\C2691-AD.BIN
+        ram = 128
+        confreg = 0x2102
+        exec_area = 32
+        idlemax = 100
+
+    [[router R1]]
+	console = 2001
+	slot1 = NM-4T
+	s1/0 = FRSW 1
+	f0/0 = R5 f0/0
+	f0/1 = R6 f0/1
+
+    [[router R2]]
+	console = 2002
+	slot1 = NM-4T
+	s1/0 = FRSW 2
+
+    [[router R3]]
+	console = 2003
+	slot1 = NM-4T
+	s1/0 = FRSW 3
+
+    [[router R4]]
+	console = 2004
+	slot1 = NM-4T
+	s1/0 = FRSW 4
+	f0/0 = R7 f0/0
+	f0/1 = R8 f0/1
+
+    [[router R5]]
+	console = 2005
+	slot1 = NM-4T
+	s1/0 = FRSW 5
+
+    [[router R6]]
+	console = 2006
+	slot1 = NM-4T
+	s1/0 = FRSW 6
+
+    [[router R7]]
+	console = 2007
+	slot1 = NM-4T
+	s1/0 = FRSW 7
+
+    [[router R8]]
+	console = 2008
+	slot1 = NM-4T
+	s1/0 = FRSW 8
+
+    [[FRSW FRSW]]
+	1:102 = 2:201
+	1:103 = 3:301
+	1:104 = 4:401
+	1:105 = 5:501
+	1:106 = 6:601
+	1:107 = 7:701
+	1:108 = 8:801
+	2:203 = 3:302
+	2:204 = 4:402
+	2:205 = 5:502
+	2:206 = 6:602
+	2:207 = 7:702
+	2:208 = 8:802
+	3:304 = 4:403
+	3:305 = 5:503
+	3:306 = 6:603
+	3:307 = 7:703
+	3:308 = 8:803
+	4:405 = 5:504
+	4:406 = 6:604
+	4:407 = 7:704
+	4:408 = 8:804
+	5:506 = 6:605
+	5:507 = 7:705
+	5:508 = 8:805
+	6:607 = 7:706
+	6:608 = 8:806
+	7:708 = 8:807

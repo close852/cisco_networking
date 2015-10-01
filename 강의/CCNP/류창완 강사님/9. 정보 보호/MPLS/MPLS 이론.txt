@@ -1,0 +1,249 @@
+                                               ###  MPLS (Multi-Protocol Label Switching)
+
+                     ## MPLS 개요
+
+-Layer 2 스위칭 기술과 layer 3 라우팅 기술의 접목한 기능으로
+  Routing 만으로는 많은 양의 데이터를 처리하는데 한계에 극복하기위해서
+  Router를 사용하여 Switch개념으로 데이터를 전송하는 기능
+
+-기존의 Packet전송은 Packet의 목적지에 기반한 전송이었지만
+  MPLS에서는 Edge에서 IP 주소 앞에 고정된 Label을 Tagging한 후 
+  Label정보를 기반으로 Switching 하게 되므로 H/W에 의한 고속 Switching이 가능하다.
+
+-layer 2 switching에 기반한 packet forwarding과 layer 3 routing의 장점을 결합한 형태로 packet기반 
+  또는 cell기반의 network에서 packet전송을 위해 Label을 이용
+
+-MPLS를 사용하는 가장큰 이유중의 하나는 대규모 VPN망 구성시 기존의 VPN서비스보다 쉽게 구성이 가능하다.
+  일반적으로 사용하는 IPsec VPN과 달리 MPLS VPN은 내부 트래픽과 외부 트래픽을 완벽하게 구분하여 안전한 VPN망을 구성할수 있다.
+
+-일반적인 VPN 서비스는 고객데이터뿐만이 아니라 공격자의 데이터까지 전달되는반면
+  MPLS VPN은 내부망과 외부망이 다르게 구성되므로 공격자의 데이터는 전송되지 않는다.
+  또한 IPsec VPN과 달리 MPLS VPN은 MPLS 망 가입자로 제한되기때문에 다른 조직의 망으로 Packet을 전송할수 없다.
+
+-단 MPLS VPN은 IPsec과달리 암호화나 인증 기능을 포함하지 않는다.
+
+
+=============================================================================================================================
+
+                     ## MPLS Header
+
+              --------------------------------------------------------------------
+	|       Layer 2	|       MPLS	|       Layer 3	|           DATA	       |	 
+              --------------------------------------------------------------------
+
+              --------------------------------------------------------------------
+	|	Label (20bit)	|     EXP (3bit)	|    BoS (1bit)    |    TTL (8bit)     |		 
+              --------------------------------------------------------------------
+
+-Label	: 20bit
+ .MPLS에서 사용하는 Label을 표시하는 필드
+ .Label = 20 bits를 사용하며 Label = 0 ~ 1048757값을 사용할수 있다.
+  이중 0 ~ 15는 특수한 용도로 예약되어있기때문에 16 ~ 100000 사이값을 사용한다.
+
+-EXP (Experimental)  : (3 bit)
+ .QoS값을 표시할때 사용하며 0 ~ 7사이 값을 사용할수 있다.
+
+-BoS (Bottom of stack)  : (1 bit)
+ .BoS필드가 1로 표시되면 자신이 마지막 MPLS Header임을 나타내며 
+  0으로 표시하게되면 4Byte의 MPLS Header가 뒤에 포함되어있음을 나타낸다.
+
+-TTL (Time to live)  :  (8 bit)
+ .IP Header의 TTL과 동일한 역할을 수행한다.
+
+	
+=============================================================================================================================
+
+                     ## MPLS Router 종류
+
+                                            |------------------ MPLS ------------------|
+                   CE-------------PE-------------P-------------P-------------PE-------------CE
+
+-CE  (Customer Edge)
+ .MPLS망과 직접 연결되는 고객사 Router를 의미하며 MPLS설정은 포함되지않는다.
+  CE Router는 자신이 MPLS망과 연결되어있는지 모르며 일반 네트워크와 설정이 동일하다.
+
+-PE  (Provider Edge)
+ .고객 Router와 직접 연결되는 MPLS Router
+ .고객사에서 입력되는 데이터에 MPLS Header를 삽입하여 전송하며
+  MPLS로 입력된 데이터를 고객사로 전송시 MPLS Header를 제거한후 전송한다
+
+-P  (Provider)
+ .고객 Router와 연결되지 않는 MPLS Router
+
+
+
+=============================================================================================================================
+
+                     ## FEC  (Forwarding Equivalence Class)
+
+-동일한 MPLS 경로를 사용하여 전송되는 Packet의 Group을 의미하며
+  동일한 FEC에 포함된 Packet들은 동일한 Label이값이 부여되며 해당 Packet이
+  어떤 FEC에 포함되느냐는 결정하는 것은Packet을 처음 수신한 MPLS Router인 LSR이다.
+
+-동일한 FEC에 포함되는 경우
+ .목적지가 동일한 packet
+ .BGP Next-hop이 동일한 packet
+
+
+
+
+
+=============================================================================================================================
+
+                     ## LIB (Label Information Base) , LFIB (Label Forwarding Information Base)
+
+-LER (Label Edge Router) 	  : Label을 Tagging하거나 Untagging을 수행하는 라우터
+-LSR (Label Switched Router) : 부여된 Label을 전송하는 라우터
+
+-LSR은 Routing Table에 등록된 IGP 네트워크에 하나의 Label을 부여하게되는데 이것을 Local Binding이라고 한다.
+  LSR은 자신의 Local Binding정보를 인접한 Router에게 광고하며
+  인접한 LSR Router에게 광고 받은 Label정보를 Remote Binding이라고 한다.
+
+-LSR은 Local Binding과 Remote Binding 정보를 LIB라고 하는 Database에 저장한다.
+  LSR은 특정 FEC나 특정 Interface에 유일한 Label정보를 부여할수 있으며
+  FEC당 Label을 부여하게되면 목적지 네트워크당 하나의 Local Binding을 갖으며
+  Interface별 Label을 부여하게되면 Interface별 목적지 네트워크별로 Local Binding을 갖는다.
+
+-인접 LSR이 다수가 존재하게되면 목적지 네트워크당 다수개의 Remote Binding을 갖는다.
+  하나의 목적지 네트워크에 대해서 다수의 Remote Binding이 가져도 그중 하나의 경로만 사용된다.
+  LSR에서 목적지로 가는 Next-hop은 일반 Router와 마찬가지로 Routing Table에 의해서 결정된다.
+
+-LSR은 LIB와 Routing Table을 이용하여 Local Binding과 Remote Binding에서 사용되는
+  Label을 결정한후 이 정보를 LFIB에 저장한다.
+  즉 인접한 LSR로부터 수신한 모든 Binding 정보를 LIB에 저장하고 LIB의 경로중 최적 경로를 선출하여 LFIB에 저장한다.
+
+
+=============================================================================================================================
+
+                     ## Label Binding
+
+-FEC별로 Label을 부여하는것을 Label Binding이라고 한다.
+ 대부분의 경우 LSR이 독자적으로 FEC별로 Label을 부여하고 이정보를 인접한 LSR에게 전송한다.
+ 이 Label값은 인접한 Router간에서만 유효하다.
+
+                          --- 2002--->              --- 3003--->          --- Pop Tag --->  13.13.4.4/32
+                   R1------------------R2------------------R3------------------R4
+         Lo bindings 1001         Lo bindings 2002         Lo bindings 3003
+         Re bindings 2002        Re bindings 3003
+
+
+         32 bindings 20
+-R1이 R2에게 목적지 IP 주소가 1.1.14인 Packet 전송시 1.1.14 네트워크에 대해서 Label값을 10을 사용한다.
+  R2는 R3에게 Packet 전송시 1.1.14 네트워크에 대해서 Label값을 20을 사용한다.
+  Packet이 목적지 네트워크까지 전송되는 동안 Label값은 계속 변경된다.
+
+-Router간 Label Binding정보를 광고하기위해서는
+   TDP (Tag Distribution Protocol) , LDP (Label Distribution Protocol) , BGP Protocol을 사용해야한다.
+
+-TDP , LDP는 Label을 부여하는 Protocol이며
+  TDP는 CISCO 전용 Protocol이며 LDP는 표준 Protocol이다.
+
+
+
+
+=============================================================================================================================
+
+                     ## VRF  (Virtual Routing/Forwarding)
+
+-VRF는 각 고객 (VPN)별 Routing Table , CEF Table 및 PE Router에 관련된 
+  Routing Protocol의 집합을 의미하며 PE Router는 연결된 하나의 고객에 대해서 하나의 VRF를 갖는다.
+  즉 PE Router는  MPLS망 내부의 Routing을 위한 Routing Table과 PE Router에 연결된
+  각 고객의 Packet을 Routing하기위한  VRF Table을 갖고있다.
+
+
+
+                     ## RD  (Route Distinguisher)
+-서로 다른 고객사에서 동일한 IP 주소를 사용시에 RD를 사용하여 각 네트워크를 구분할수있다.
+  즉 RD는 서로다른 VPN (고객)을 구분하는 식별자 역할을 한다.
+
+-RD는 MBGP내에서 경로를 구분하는 역할을 한다.
+  동일 고객을 위한 RD값은 같거나 달라도 된다 
+ (동일 고객사의 내부망이 동일한 주소를 사용하는일은 없기때문에 RD값이 달라도 네트워크를 구분할수 있다.)
+
+-IPv4 네트워크와  RD의 조합을 VPNv4 Prefix라고 하며 MBGP가 VPNv4 Prefix를 PE간 전송한다.
+  RD는 AA:NN형식을 사용한다. 예를들어 200.20.2.2/24 네트워크 정보에 RD값 1:100이 부여되면
+  1:100:200.20.2.2.24로 표시한다.
+
+
+
+
+                     ## RT  (Route Target)
+
+-특정 MPLS 경로 정보를 어느 VRF로 전송할지를 결정하는값이 RT이다.
+  RT는 BGP의 확장 Community를 사용하며 VPN경로에 표시된다.
+
+-RD만으로 서로 다른 VPN간 통신이 어렵다.
+ 서로 다른 계열사간 통신등을 위해서 서로 다른 VPN간 통신시 RT를 사용하여 경로를 지정할수 있다.
+
+
+	   Site-A	(RT Export  1:100)
+	   Site-A	(RT Import  2:100)                                    (RT Import  1:100)  Site-C
+	       |								  |
+	       |								  |
+	       |								  |
+                   R1------------------R2------------------R3------------------R4
+				  |
+				  |
+				  |
+				  |
+				  |
+	                                    Site-B
+                                          (RT Export  2:100)  
+                                          (RT Import  1:100)  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

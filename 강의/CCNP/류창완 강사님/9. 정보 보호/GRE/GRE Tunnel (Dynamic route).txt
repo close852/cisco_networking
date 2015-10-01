@@ -1,0 +1,418 @@
+                                 ### GRE(Generic Routing Encapsulation) Tunnel 구성  (Dynamic Route)
+
+
+
+                ## OSPF를 사용한 공중망 구성
+
+-R1 , R2 , R3구간에 OSPF Routing Protocol을 사용하여 연결
+ .OSPF Process = 100 , Router-ID = 13.13.X.X  (X = Router 번호)
+ .OSPF라우팅 업데이트가 필요한 Interface로 OSPF Packet이 송신되어야 한다.
+ .OSPF환경에 포함된 모든 네트워크는 Interface에 할당된 SubnetMask로 확인되어야 한다.
+
+    # ISP-1
+router ospf 100
+ router-id 13.13.1.1
+ network 13.13.1.1  0.0.0.0  area 0
+ network 13.13.9.1  0.0.0.0  area 0
+ passive-interface default
+ no passive-interface serial 1/0.12
+!
+interface loopback 0
+ ip ospf network point-to-point
+!
+
+    # ISP-2
+router ospf 100
+ router-id 13.13.2.2
+ network 13.13.2.2  0.0.0.0  area 0
+ network 13.13.8.2  0.0.0.0  area 0
+ network 13.13.9.2  0.0.0.0  area 0
+ passive-interface default
+ no passive-interface serial 1/0.12
+ no passive-interface serial 1/0.23
+!
+interface loopback 0
+ ip ospf network point-to-point
+!
+
+    # ISP-3
+router ospf 100
+ router-id 13.13.3.3
+ network 13.13.3.3  0.0.0.0  area 0
+ network 13.13.8.3  0.0.0.0  area 0
+ passive-interface default
+ no passive-interface serial 1/0.23
+!
+interface loopback 0
+ ip ospf network point-to-point
+!
+
+        정보 확인
+
+R1# show ip ospf neighbor  [R2와 인접성 연결 확인]
+
+R2# show ip ospf neighbor  [R1 , R3과 인접성 연결 확인]
+
+R3# show ip ospf neighbor  [R2와 인접성 연결 확인]
+
+
+R1# show ip route
+     13.0.0.0/24 is subnetted, 6 subnets
+C       13.13.1.0 is directly connected, Loopback0
+O       13.13.2.0 [110/65] via 13.13.9.2, 00:00:02, Serial1/0.12
+O       13.13.3.0 [110/129] via 13.13.9.2, 00:00:02, Serial1/0.12
+O       13.13.8.0 [110/128] via 13.13.9.2, 00:00:02, Serial1/0.12
+C       13.13.9.0 is directly connected, Serial1/0.12
+C       13.13.11.0 is directly connected, FastEthernet0/1
+     150.1.0.0/24 is subnetted, 1 subnets
+C       150.1.13.0 is directly connected, FastEthernet0/0
+
+
+R2# show ip route
+     13.0.0.0/24 is subnetted, 6 subnets
+O       13.13.1.0 [110/65] via 13.13.9.1, 00:00:25, Serial1/0.12
+C       13.13.2.0 is directly connected, Loopback0
+O       13.13.3.0 [110/65] via 13.13.8.3, 00:00:25, Serial1/0.23
+C       13.13.8.0 is directly connected, Serial1/0.23
+C       13.13.9.0 is directly connected, Serial1/0.12
+C       13.13.12.0 is directly connected, FastEthernet0/1
+
+R3# show ip route
+     13.0.0.0/24 is subnetted, 6 subnets
+O       13.13.1.0 [110/129] via 13.13.8.2, 00:00:22, Serial1/0.23
+O       13.13.2.0 [110/65] via 13.13.8.2, 00:00:22, Serial1/0.23
+C       13.13.3.0 is directly connected, Loopback0
+C       13.13.8.0 is directly connected, Serial1/0.23
+O       13.13.9.0 [110/128] via 13.13.8.2, 00:00:22, Serial1/0.23
+C       13.13.13.0 is directly connected, FastEthernet0/1
+     150.3.0.0/24 is subnetted, 1 subnets
+C       150.3.13.0 is directly connected, FastEthernet0/0
+
+
+
+==================================================================================================================
+
+
+                             ### EIGRP Routing Protocol을 사용한 사설망 구성
+
+-EIGRP Routing Protocol을 사용하여 ISP-1 <--> R4 , ISP-3 <--> R5에 사설망을 구성하시오
+ .AS = 100 , 자동 요약 기능은 사용하지않는다.
+ .EIGRP 라우팅 업데이트가 필요한 Interface로만 EIGRP Packet을 송신해야 한다.
+ .ISP-1 , ISP-3의 FastEthernet 0/1 Interface는 EIGRP에 포함되어야 한다.
+
+
+
+             ## ISP-1  <---->  서울 본사간 EIGRP 연결
+
+    # ISP-1
+router eigrp 100
+ no auto-summary
+ network 13.13.11.0  0.0.0.255
+ network 150.1.13.0  0.0.0.255
+ passive-interface default
+ no passive-interface fastethernet 0/0
+!
+
+    # R4
+router eigrp 100
+ no auto-summary
+ network 13.13.4.0  0.0.0.255
+ network 150.1.13.0  0.0.0.255
+ network 192.168.4.0  0.0.0.255
+ passive-interface default
+ no passive-interface fastethernet 0/0
+!
+
+        정보 확인
+
+ISP-1# show ip eigrp neighbor
+IP-EIGRP neighbors for process 100
+H   Address         	       Interface	Hold Uptime   SRTT   RTO  Q   Seq
+                                            	(sec)              (ms)         Cnt  Num
+0   150.1.13.4	       Fa0/0   	   10 00:00:23    71   426   0   3
+
+
+ISP-1# show ip route eigrp
+D    192.168.4.0/24 [90/307200] via 150.1.13.4, 00:00:03, FastEthernet0/0
+     13.0.0.0/24 is subnetted, 7 subnets
+D       13.13.4.0 [90/409600] via 150.1.13.4, 00:00:03, FastEthernet0/0
+ISP-1# ping 192.168.4.4
+
+
+
+
+
+
+
+
+             ## ISP-3  <---->  부산 지사간 EIGRP 연결
+
+    # ISP-3
+router eigrp 100
+ no auto-summary
+ network 13.13.13.0  0.0.0.255
+ network 150.3.13.0  0.0.0.255
+ passive-interface default
+ no passive-interface fastethernet 0/0
+!
+
+    # R5
+router eigrp 100
+ no auto-summary
+ network 13.13.5.0  0.0.0.255
+ network 150.3.13.0  0.0.0.255
+ network 192.168.5.0  0.0.0.255
+ passive-interface default
+ no passive-interface fastethernet 0/0
+!
+
+
+        정보 확인
+
+ISP-3# show ip eigrp neighbor
+IP-EIGRP neighbors for process 100
+H   Address         	       Interface	Hold Uptime   SRTT   RTO  Q   Seq
+                                            	(sec)              (ms)         Cnt  Num
+0   150.3.13.5	       Fa0/0   	   10 00:00:23    71   426   0   3
+
+
+
+ISP-3# show ip route eigrp
+D    192.168.5.0/24 [90/307200] via 150.3.13.5, 00:00:03, FastEthernet0/0
+     13.0.0.0/24 is subnetted, 7 subnets
+D       13.13.5.0 [90/409600] via 150.3.13.5, 00:00:03, FastEthernet0/0
+ISP-3# ping 192.168.5.5
+
+
+
+
+
+==================================================================================================================
+
+
+                                         ### 사설 망을 연결하기위한 GRE Tunnel 구성
+
+EX) ISP-1 , ISP-3구간을 Tunnel을 사용하여 연결하시오
+ .Tunnel에 할당할 IP 주소는 100.10.13.0/24
+ .Tunnel로 통신시 사용할 Source IP address , Destination IP address는 
+   Loopback 0에 할당된 IP 주소를 사용해야 한다.
+
+     # ISP-1 (R1)
+interface tunnel 13
+ ip address 192.168.13.1  255.255.255.0
+ tunnel source 13.13.9.1
+ tunnel destination 13.13.8.3
+!
+
+     # ISP-3 (R3)
+interface tunnel 13
+ ip address 192.168.13.3  255.255.255.0
+ tunnel source 13.13.8.3
+ tunnel destination 13.13.9.1
+!
+
+          정보 확인
+
+ISP-1# show ip route
+     100.0.0.0/24 is subnetted, 1 subnets
+C       100.10.13.0 is directly connected, Tunnel13              <------------- Tunnel 13경로 확인
+D    192.168.4.0/24 [90/307200] via 150.1.13.4, 00:11:44, FastEthernet0/0
+     13.0.0.0/24 is subnetted, 7 subnets
+C       13.13.1.0 is directly connected, Loopback0
+O       13.13.2.0 [110/65] via 13.13.9.2, 00:18:22, Serial1/0.12
+O       13.13.3.0 [110/129] via 13.13.9.2, 00:18:22, Serial1/0.12
+D       13.13.4.0 [90/409600] via 150.1.13.4, 00:11:45, FastEthernet0/0
+O       13.13.8.0 [110/128] via 13.13.9.2, 00:18:22, Serial1/0.12
+C       13.13.9.0 is directly connected, Serial1/0.12
+C       13.13.11.0 is directly connected, FastEthernet0/1
+     150.1.0.0/24 is subnetted, 1 subnets
+C       150.1.13.0 is directly connected, FastEthernet0/0
+ISP-1# ping 100.10.13.3
+
+
+
+ISP-3# show ip route
+     100.0.0.0/24 is subnetted, 1 subnets
+C       100.10.13.0 is directly connected, Tunnel13             <------------- Tunnel 13경로 확인
+D    192.168.5.0/24 [90/307200] via 150.3.13.5, 00:10:08, FastEthernet0/0
+     13.0.0.0/24 is subnetted, 7 subnets
+O       13.13.1.0 [110/129] via 13.13.8.2, 00:18:33, Serial1/0.23
+O       13.13.2.0 [110/65] via 13.13.8.2, 00:18:33, Serial1/0.23
+C       13.13.3.0 is directly connected, Loopback0
+D       13.13.5.0 [90/409600] via 150.3.13.5, 00:10:08, FastEthernet0/0
+C       13.13.8.0 is directly connected, Serial1/0.23
+O       13.13.9.0 [110/128] via 13.13.8.2, 00:18:33, Serial1/0.23
+C       13.13.13.0 is directly connected, FastEthernet0/1
+     150.3.0.0/24 is subnetted, 1 subnets
+C       150.3.13.0 is directly connected, FastEthernet0/0
+ISP-3# ping 100.10.13.1
+
+
+
+
+
+
+==================================================================================================================
+
+                                         ### Tunnel 경로를 사용한 사설망 연결
+
+-서울 본사	: 192.168.4.0/24
+-부산 지사	: 192.168.5.0/24
+
+
+    # ISP-1  (R1)
+router eigrp 100
+ network 100.10.13.0  0.0.0.255
+ no passive-interface tunnel 13
+!
+
+    # ISP-3  (R1)
+router eigrp 100
+ network 100.10.13.0  0.0.0.255
+ no passive-interface tunnel 13
+!
+
+         정보 확인
+
+ISP-1# show ip eigrp neighbor
+IP-EIGRP neighbors for process 100
+H   Address        	        Interface	Hold	Uptime	  SRTT   RTO  Q   Seq
+                                            	(sec)                       (ms)         Cnt  Num
+1   100.10.13.3   	        Tu13  	   14  	00:00:05	      54  5000  0   10
+0   150.1.13.4  	        Fa0/0   	     9  	00:19:56	      57   342   0    3
+
+
+ISP-3# show ip eigrp neighbor
+IP-EIGRP neighbors for process 100
+H   Address        	        Interface	Hold	Uptime	  SRTT   RTO  Q   Seq
+                                            	(sec)                       (ms)         Cnt  Num
+1   100.10.13.1   	        Tu13  	   14  	00:00:05	      54  5000  0   10
+0   150.3.13.5  	        Fa0/0   	     9  	00:19:56	      57   342   0    3
+
+
+
+ISP-1# show ip route eigrp
+D    192.168.4.0/24 [90/307200] via 150.1.13.4, 00:16:23, FastEthernet0/0    <--- 서울 본사 네트워크 정보
+D    192.168.5.0/24 [90/297295616] via 100.10.13.3, 00:00:06, Tunnel13       <--- 부산 지사 네트워크 정보
+     13.0.0.0/24 is subnetted, 9 subnets
+D       13.13.4.0 [90/409600] via 150.1.13.4, 00:16:23, FastEthernet0/0
+D       13.13.5.0 [90/297398016] via 100.10.13.3, 00:00:06, Tunnel13
+D       13.13.13.0 [90/297270016] via 100.10.13.3, 00:00:06, Tunnel13
+     150.3.0.0/24 is subnetted, 1 subnets
+D       150.3.13.0 [90/297270016] via 100.10.13.3, 00:00:07, Tunnel13
+
+
+ISP-3# show ip route eigrp
+D    192.168.4.0/24 [90/297295616] via 100.10.13.1, 00:00:15, Tunnel13
+D    192.168.5.0/24 [90/307200] via 150.3.13.5, 00:14:38, FastEthernet0/0
+     13.0.0.0/24 is subnetted, 9 subnets
+D       13.13.4.0 [90/297398016] via 100.10.13.1, 00:00:15, Tunnel13
+D       13.13.5.0 [90/409600] via 150.3.13.5, 00:14:38, FastEthernet0/0
+D       13.13.11.0 [90/297270016] via 100.10.13.1, 00:00:15, Tunnel13
+     150.1.0.0/24 is subnetted, 1 subnets
+D       150.1.13.0 [90/297270016] via 100.10.13.1, 00:00:15, Tunnel13
+
+
+R4# ping 192.168.5.5  source 192.168.4.4
+
+R5# ping 192.168.4.4  source 192.168.5.5
+
+
+
+
+
+
+
+=> capture R1 s1/0 GRE_D.cap FR
+
+-[CISCO]  --->  [CISCO 실습]  --->  [tmp]  --->  GRE.cap
+
+
+           ## 192.168.4.4    ----- ICMP ----->   192.168.5.5
+----------------------------------------------------------------------------
+   New IP Header	 | GRE	   |         IP Header		|       ICMP	|
+----------------------------------------------------------------------------
+ -SA : 13.13.1.1	 | G R E	   |    -SA : 192.168.4.4	|     Type-8	|
+ -DA : 13.13.3.3	 |	   |    -SA : 192.168.5.5	|    (Request)	|
+----------------------------------------------------------------------------
+
+
+           ## 192.168.4.4    <----- ICMP -----   192.168.5.5
+----------------------------------------------------------------------------
+   New IP Header	 | GRE	   |         IP Header		|       ICMP	|
+----------------------------------------------------------------------------
+ -SA : 13.13.3.3	 | G R E	   |    -SA : 192.168.5.5	|     Type-0	|
+ -DA : 13.13.1.1	 |	   |    -SA : 192.168.4.4	|     (Reply)	|
+----------------------------------------------------------------------------
+
+
+
+==================================================================================================================
+
+
+
+           ## ISP-1    ----- EIGRP ----->   ISP-3
+----------------------------------------------------------------------------
+   New IP Header	 | GRE	   |         IP Header		|       EIGRP	|
+----------------------------------------------------------------------------
+ -SA : 13.13.1.1	 | G R E	   |    -SA : 100.10.13.1	|       Hello	|
+ -DA : 13.13.3.3	 |	   |    -SA : 224.0.0.10	|    		|
+----------------------------------------------------------------------------
+
+
+           ## ISP-1    <----- EIGRP -----   ISP-3
+----------------------------------------------------------------------------
+   New IP Header	 | GRE	   |         IP Header		|       EIGRP	|
+----------------------------------------------------------------------------
+ -SA : 13.13.3.3	 | G R E	   |    -SA : 100.10.13.3	|       Hello	|
+ -DA : 13.13.1.1	 |	   |    -SA : 224.0.0.10	|    		|
+----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

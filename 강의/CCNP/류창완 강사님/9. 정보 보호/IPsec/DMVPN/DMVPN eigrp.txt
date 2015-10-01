@@ -1,0 +1,14 @@
+router eigrp 456
+ passive-interface default
+ no passive-interface FastEthernet0/0
+ network 13.13.20.0 0.0.0.255
+ network 211.241.25.0
+ no auto-summary
+
+router eigrp 456
+ passive-interface default
+ no passive-interface FastEthernet0/0
+ network 13.13.5.0 0.0.0.255
+ network 192.168.5.0
+ network 211.241.25.0
+ no auto-summary
