@@ -1,0 +1,305 @@
+                   ### TCP Intercept
+
+-TCP Syn Flooding으로 인한 DoS(Denial of Service)공격을 막기위한 방법
+
+-TCP Syn Flooding의 특징으로 Server에게 도달 불가능한 IP주소를 출발지 주소로하여
+  TCP Packet을 전송하여 Server가 해당 TCP SYN/ACK를 보내고 무한정 ACK를
+  기다리게함으로써 TCP Session을 완성하지 못하게하여 많은 Session을 열게하여
+  Server는 Session Full상태로 인하여  Service를 제공하지 못하게된다.
+
+
+-Intercept mode
+ : Default mode이며 Server로 향하는 TCP Packet을 Router가 가로챈후
+   Router는 Server의 IP 주소를 출발지 주소로 Client에게 TCP Syn/ACK를 전송한다.
+   Client로부터 Ack를 수신하게되며면
+   Router는 Client의 IP 주소를 출발지 주소로 Server에게 Syn를 전송하여 
+   TCP Session을 연결하며 3way단계를 거쳐 TCP를 연결한다.
+   만약 Client로부터 30초간 ACK를 수신하지 못하게되면 Client에게 RST을 전송하여 강제로 TCP Session을 강제 종료한다.
+
+
+                                  [정상적인 사용자]
+                                           TCP Intercept                        Web-Server
+            R4-------------------------R1---------------------------R2
+            1.   --------Sync-------->
+            2. <------Syn + Ack ------
+            3.  -------- Ack -------->
+				  4.   --------Sync-------->
+				  5.   <-----Syn + Ack -----
+				  6.   -------- Ack -------->
+
+
+
+                                  [TCP syn Flooding공격으로 간주될경우]
+                                           TCP Intercept                        Web-Server
+            R4-------------------------R1---------------------------R2
+            1.   --------Sync-------->
+            2. <------Syn + Ack -----
+            3. <-------- RST --------
+
+
+
+
+-Watch mode
+ : Watch mode로 동작하는 해당 Router는 Server와 Client간에 TCP Session을 감시하며
+   만약 30초 (Default로 30초로 동작)내에 TCP Session이 연결되지 못하게되면
+   Server에게 Reset Packet를 전송하여 TCP Session을 강제 종료한다.
+
+
+                                  [정상적인 사용자]
+                                              TCP Intercept                          Web-Server
+            R4-----------------------R1-------------------------R2
+            1.    -------------------- Sync -------------------->
+            2.    <----------------- Syn + Ack ------------------
+            3.    --------------------- Ack -------------------->
+
+
+                                  [TCP syn Flooding공격으로 간주될경우]
+                                              TCP Intercept                          Web-Server
+            R4-----------------------R1-------------------------R2
+            1.    -------------------- Sync -------------------->
+            2.    <----------------- Syn + Ack ------------------
+            3.                                     -------- RST -------->
+
+
+
+    # R2
+interface loopback 211
+ ip address 211.241.228.18
+!
+router rip
+ network 211.241.228.0
+!
+
+
+==================================================================================================================
+
+EX1) R1에서 TCP Syn Flooding 공격을 방지해야한다.
+ ."150.1.13.254"로부터 R2 "211.241.228.18" Web-Server가 TCP Syn Flooding 공격받고있다
+ .R1은 TCP 3way 핸드 쉐이킹을 모니터링중 공격으로 간주될경우 TCP연결 15초이내에 TCP연결이 종료되도록 설정해야한다.
+
+   # R1
+ip access-list extended SYN_FLOODING
+ permit tcp any host  211.241.228.18
+!
+ip tcp intercept list SYN_FLOODING
+ip tcp intercept mode watch
+ip tcp intercept watch-timeout 15
+!
+
+                정보 확인
+
+
+                                  [정상적인 사용자]
+                                                       TCP Intercept                    Web-Server
+    (150.1.13.254)	R4-----------------------R1-------------------------R2  (211.241.228.18)
+            		1.    -------------------- Sync -------------------->
+            		2.    <----------------- Syn + Ack ------------------
+            		3.    --------------------- Ack -------------------->
+
+
+R1# debug ip tcp intercept
+TCP intercept debugging is on
+
+
+
+R4# telnet 211.241.228.18
+
+
+
+R1# debug ip tcp intercept
+TCP intercept debugging is on
+
+*Mar  1 00:10:54.831: INTERCEPT: new connection (150.1.13.254:20696 SYN -> 211.241.228.18:23)
+*Mar  1 00:10:54.867: INTERCEPT: (150.1.13.254:20696 <- ACK+SYN 211.241.228.18:23)
+*Mar  1 00:10:54.899: INTERCEPT: (150.1.13.254:20696 ACK -> 211.241.228.18:23)
+
+
+
+                         #### R4를 공격자로 만들기위한 ACL 추가 설정
+
+    # R1
+access-list 101 deny tcp host 150.1.13.254  host 211.241.228.18 ack
+access-list 101 permit ip any any
+!
+interface fastethernet 0/0
+ ip access-group 101 in
+!
+
+
+
+                                  [TCP syn Flooding공격으로 간주될경우]
+                                                       TCP Intercept                    Web-Server
+    (150.1.13.254)	R4-----------------------R1-------------------------R2  (211.241.228.18)
+            		 1.    -------------------- Sync -------------------->
+            		 2.    <----------------- Syn + Ack ------------------
+            		 3.                                     -------- RST -------->
+
+
+
+
+R4# telnet 211.241.228.18
+
+
+
+R1# debug ip tcp intercept
+TCP intercept debugging is on
+
+*Mar  1 00:12:46.219: INTERCEPT: new connection (150.1.13.254:59227 SYN -> 211.241.228.18:23)
+
+*Mar  1 00:12:46.263: INTERCEPT: (150.1.13.254:59227 <- ACK+SYN 211.241.228.18:23)
+
+*Mar  1 00:12:48.343: INTERCEPT: server packet passed in SYNRCVD (150.1.13.254:59227 <- 211.241.228.18:23)
+
+*Mar  1 00:12:52.383: INTERCEPT: server packet passed in SYNRCVD (150.1.13.254:59227 <- 211.241.228.18:23)
+
+*Mar  1 00:13:00.027: INTERCEPT: server packet passed in SYNRCVD (150.1.13.254:59227 <- 211.241.228.18:23)
+
+*Mar  1 00:13:01.223: INTERCEPT: SYNRCVD timing out (150.1.13.254:59227 <-> 211.241.228.18:23)
+
+*Mar  1 00:13:01.227: INTERCEPT(*): (150.1.13.254:59227 RST -> 211.241.228.18:23)
+
+
+
+
+
+==================================================================================================================
+
+EX2) R1에서 TCP Syn Flooding 공격을 방지해야한다.
+ ."150.3.13.254"로부터 R2 "211.241.228.18" Web-Server가 TCP Syn Flooding 공격받고있다
+   이때 R3이 TCP 3way 핸드 쉐이킹에 대해서 직접 처리하며
+   공격으로 간주될경우 TCP연결 30초이내에 TCP연결이 종료되도록 설정해야한다.
+
+   # R3
+ip access-list extended SYN_FLOODING
+ permit tcp any host  211.241.228.18
+!
+ip tcp intercept list SYN_FLOODING
+ip tcp intercept mode intercept
+ip tcp intercept connection-timeout 30
+!
+
+
+                                  [정상적인 사용자]
+
+                                           TCP Intercept                        Web-Server
+       (150.1.13.254)	R4-------------------------R1---------------------------R2   (211.241.228.18)
+            		 1.   --------Sync-------->
+            		 2. <------Syn + Ack ------
+            		 3.  -------- Ack -------->
+				                4.   --------Sync-------->
+				                5.   <-----Syn + Ack -----
+				                6.   -------- Ack -------->
+
+
+R5# telnet 211.241.228.18
+Trying 211.241.228.18 ... Open
+
+R3# debug ip tcp intercept 
+TCP intercept debugging is on
+
+
+*Mar  1 00:21:19.311: INTERCEPT: new connection (150.3.13.254:48727 SYN -> 211.241.228.18:23)
+
+*Mar  1 00:21:19.319: INTERCEPT(*): (150.3.13.254:48727 <- ACK+SYN 211.241.228.18:23)
+
+*Mar  1 00:21:19.363: INTERCEPT: 1st half of connection is established (150.3.13.254:48727 ACK -> 211.241.228.18:23)
+
+*Mar  1 00:21:19.371: INTERCEPT(*): (150.3.13.254:48727 SYN -> 211.241.228.18:23)
+
+*Mar  1 00:21:19.403: INTERCEPT: 2nd half of connection established  (150.3.13.254:48727 <- ACK+SYN 211.241.228.18:23)
+
+*Mar  1 00:21:19.407: INTERCEPT(*): (150.3.13.254:48727 ACK -> 211.241.228.18:23)
+
+*Mar  1 00:21:19.411: INTERCEPT(*): (150.3.13.254:48727 <- WINDOW 211.241.228.18:23)
+
+
+
+
+
+
+                         #### R5를 공격자로 만들기위한 ACL 추가 설정
+
+    # R3
+access-list 101 deny tcp host 150.3.13.254  host 211.241.228.18 ack
+access-list 101 permit ip any any
+!
+interface fastethernet 0/0
+ ip access-group 101 in
+!
+
+                                  [TCP syn Flooding공격으로 간주될경우]
+
+
+                                           TCP Intercept                        Web-Server
+       (150.1.13.254)	R4-------------------------R1---------------------------R2   (211.241.228.18)
+            		 1.   --------Sync-------->
+            		 2. <------Syn + Ack ------
+            		 3.  <-------- RST --------
+
+
+R5# telnet 211.241.228.18
+Trying 211.241.228.18 ... Open
+
+
+R3# debug ip tcp intercept 
+TCP intercept debugging is on
+
+*Mar  1 00:25:06.203: INTERCEPT: new connection (150.3.13.254:16482 SYN -> 211.241.228.18:23)
+
+*Mar  1 00:25:06.211: INTERCEPT(*): (150.3.13.254:16482 <- ACK+SYN 211.241.228.18:23)
+
+*Mar  1 00:25:07.211: INTERCEPT(*): SYNRCVD retransmit 1 (150.3.13.254:16482 <- ACK+SYN 211.241.228.18:23)
+
+*Mar  1 00:25:09.211: INTERCEPT(*): SYNRCVD retransmit 2 (150.3.13.254:16482 <- ACK+SYN 211.241.228.18:23)
+
+*Mar  1 00:25:13.211: INTERCEPT(*): SYNRCVD retransmit 3 (150.3.13.254:16482 <- ACK+SYN 211.241.228.18:23)
+
+*Mar  1 00:25:21.211: INTERCEPT(*): SYNRCVD retransmit 4 (150.3.13.254:16482 <- ACK+SYN 211.241.228.18:23)
+
+*Mar  1 00:25:37.211: INTERCEPT: SYNRCVD retransmitting too long (150.3.13.254:16482 <-> 211.241.228.18:23)
+
+*Mar  1 00:25:37.215: INTERCEPT(*): (150.3.13.254:16482 <- RST 211.241.228.18:23)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

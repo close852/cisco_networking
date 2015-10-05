@@ -1,0 +1,293 @@
+                                           ### ACL (Access Control-List)
+
+EX1) R2 내부 네트워크 13.13.12.0/24에 대해서 접근하는 트래픽을 차단하시오
+EX1.1) 150.1.13.254로부터 오는 Telnet트래픽과 150.3.13.254로부터 오는 HTTP 트래픽을 차단하시오
+EX1.2) 출발지가 13.13.11.0/24이고 목적지가 13.13.12.0/24인 Subnet으로 ICMP트래픽을 차단하시오 
+EX1.3) 차단되는 트래픽에는 Log message , Interface정보를 확인할수 있어야 한다.
+EX1.4) 이외의 나머지 트래픽에 대해서는 접근이 가능해야한다. (R2에서 설정)
+
+     # R2
+access-list 101 deny tcp  host 150.1.13.254  13.13.12.0  0.0.0.255 eq 23 log-input
+access-list 101 deny tcp  host 150.3.13.254  13.13.12.0  0.0.0.255 eq 80 log-input
+access-list 101 deny icmp 13.13.11.0  0.0.0.255  13.13.12.0  0.0.0.255 log-input
+access-list 101 permit ip any any
+!
+interface serial 1/0.123
+ ip access-group 101 in
+!
+
+           정보 확인
+
+R4# telnet 13.13.12.2
+Trying 13.13.12.2 ... 
+% Destination unreachable; gateway or host down
+
+*Mar  1 00:04:23.319: %SEC-6-IPACCESSLOGP: list 101 denied tcp 150.1.13.254(64164) (Serial1/0.123 ) -> 13.13.12.2(23), 1 packet 
+
+
+
+
+R5# telnet 13.13.12.2 80
+Trying 13.13.12.2, 80 ... 
+% Destination unreachable; gateway or host down
+
+*Mar  1 00:04:54.891: %SEC-6-IPACCESSLOGP: list 101 denied tcp 150.3.13.254(13391) (Serial1/0.123 ) -> 13.13.12.2(80), 1 packet 
+
+
+
+R1# ping 13.13.12.2  source 13.13.11.1
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 13.13.12.2, timeout is 2 seconds:
+Packet sent with a source address of 13.13.11.1 
+U.U.U
+Success rate is 0 percent (0/5)
+
+*Mar  1 00:05:11.543: %SEC-6-IPACCESSLOGDP: list 101 denied icmp 13.13.11.1 (Serial1/0.123 ) -> 13.13.12.2 (8/0), 1 packet 
+
+
+
+
+
+
+                      ######## 정보 확인후 설정한 ACL 삭제 ########
+
+
+
+     # R2
+no access-list 101
+!
+interface serial 1/0.123
+ no ip access-group 101 in
+!
+
+
+
+==================================================================================================================
+
+
+-Established 
+ : TCP 트래픽중  ACK , RST가 포함된 정보만 수신
+   [ACK가 포함된 TCP Traffic만 수신하게되면 외부에서 내부로 요청하는 TCP Ttraffic은 차단된다.
+    내부에서 발생되어 나간트래픽이 리턴되어 돌아오는 정보에는 ACK가 포함되기때문에 내부에서 외부로의 통신은 가능]
+
+-단점 : TCP Traffic에만 적용이 가능하기때문에 적용 범위가 작다.
+
+
+EX2) Established" command를 사용하여 R2에서 ACL을 구성하시오
+ .외부 네트워크에서 내부 네트워크인 "13.13.12.0/24"로 접근하는 TCP 트래픽을 차단해야한다.
+ .단 내부 네트워크인 "13.13.12.0/24"는 외부 네트워크로 TCP 접근이 허용되어야 한다.
+
+    # R2
+access-list 102 permit tcp any  13.13.12.0  0.0.0.255 established
+access-list 102 permit udp any eq 520 any eq 520
+!
+interface serial 1/0.123
+ ip access-group 102 in
+!
+
+         정보 확인
+
+R4# telnet 13.13.12.2	: 내부  <--- 외부 [TCP 접속 X]
+Trying 13.13.12.2 ... 
+% Destination unreachable; gateway or host down
+
+
+
+R2# telnet 13.13.4.4		: 출발지 IP 네트워크가 13.13.12.0/24아닌 네트워크로 외부 TCP통신이 단절된다.
+Trying 13.13.4.4 ... 
+% Connection reset by user
+
+
+
+R2# telnet 13.13.4.4 /source-interface fastEthernet 0/1
+Trying 13.13.4.4 ... Open
+User Access Verification
+Password: 
+R4>en
+Password: 
+R4#
+
+
+
+
+
+
+
+==================================================================================================================
+
+-Reflective ACL
+ : 외부에서 내부로 입력되는 모든트래픽은 차단된다.
+   내부에서 외부로 출력되는 모든트래픽은 허용된다.
+   단 내부에서 생성되어 외부로 나간 트래픽이 리턴되어 입력되는 응답 Packet에 대해서는 허용된다.
+
+-내부에서 생성되어 외부로 나가는 트래픽에 대해서 State-table이생성되기때문에
+  (나간 트래픽에 대해서 리턴되는 트래픽을 허용하는 ACL이 자동으로 생성)
+  외부에서 내부로 입력되는 응답 Packet은 허용되지만 외부에서 생성되어 입력되는 트래픽은
+  State-table에 등록되지 않았기때문에 모두 차단된다.
+
+
+-Established가 TCP에만 적용할수있는 반면 Reflective ACL은 TCP , UDP , ICMP등
+  ACL로 지정할수있는 많은 Traffic을 정의하여 사용할수 있다.
+
+
+
+
+EX3) Reflective ACL을 사용하여 아래의 조건에맞게 설정을 실시하시오
+ .13.13.X.X 네트워크는 외부 네트워크 150.1.13.0/24 네트워크로 TCP , UDP , ICMP통신이 가능하지만
+  외부 네트워크인 150.1.13.0/24는 13.13.X.X 네트워크로의 트래픽이 차단되어야 한다.
+
+    # R1
+ip access-list extended IN-->OUT
+ permit tcp any any reflect REFL_ACL
+ permit udp any any reflect REFL_ACL
+ permit icmp any any reflect REFL_ACL
+!
+ip access-list extended IN<--OUT
+ permit udp any eq 520 any eq 520
+ evaluate REFL_ACL
+!
+interface fastethernet 0/0
+ ip access-group IN<--OUT in
+ ip access-group IN-->OUT out
+!
+
+          정보 확인
+
+R1# show access-list
+Extended IP access list IN-->OUT
+    10 permit tcp any any reflect REFL_ACL
+    20 permit udp any any reflect REFL_ACL
+    30 permit icmp any any reflect REFL_ACL
+Extended IP access list IN<--OUT
+    10 permit udp any eq rip any eq rip (3 matches)
+    20 evaluate REFL_ACL
+Reflexive IP access list REFL_ACL
+
+
+R2# ping 13.13.4.4 source 13.13.2.2
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 13.13.4.4, timeout is 2 seconds:
+Packet sent with a source address of 13.13.2.2 
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 28/39/64 ms
+
+
+R1# show access-list
+Extended IP access list IN-->OUT
+    10 permit tcp any any reflect REFL_ACL
+    20 permit udp any any reflect REFL_ACL
+    30 permit icmp any any reflect REFL_ACL (11 matches)
+Extended IP access list IN<--OUT
+    10 permit udp any eq rip any eq rip (3 matches)
+    20 evaluate REFL_ACL
+Reflexive IP access list REFL_ACL
+     permit icmp host 13.13.4.4 host 13.13.2.2  (19 matches) (time left 298)
+
+
+
+
+                      ######## 정보 확인후 설정한 ACL 삭제 ########
+
+   # R1
+interface fastethernet 0/0
+ no ip access-group IN<--OUT in
+ no ip access-group IN-->OUT out
+!
+
+
+==================================================================================================================
+
+-IP Fragment
+ : IP는 해당 데이터를 전송할때 MTU크기가 1500Byte로 설정되어있다.
+   만약 전송할 데이터의 크기가 1500Byte보다 크게되면 해당 데이터를 MTU크기로
+   나누어 전송하게된다 이를 IP Flagment라고 한다.
+   [분할하여 전송할때보다 분할된 데이터를 조립하는데 많은 부하가 걸리게된다.]
+
+
+EX4) R5에 연결된 Server (13.13.5.5)가 출발지 "13.13.12.2"로부터 IP Fragments 공격에의한 DoS공격시
+        해당트래픽을 처리할수 없도록 설정하시오
+
+    # R5
+access-list 104 deny icmp any 13.13.5.0  0.0.0.255 fragments 
+access-list 104 permit ip any any
+!
+interface fastethernet 0/0
+ ip access-group 104 in
+!
+
+  ------------- OR -------------
+
+    # R5
+ip access-list extended PRAGMENT 
+ deny icmp any 13.13.5.0  0.0.0.255 fragments 
+ permit ip any any
+!
+interface fastethernet 0/0
+ ip access-group PRAGMENT  in
+!
+
+            정보 확인
+
+R2# ping 13.13.5.5 source 13.13.12.2 repeat 20
+
+Type escape sequence to abort.
+Sending 20, 100-byte ICMP Echos to 13.13.5.5, timeout is 2 seconds:
+Packet sent with a source address of 13.13.12.2 
+!!!!!!!!!!!!!!!!!!!!
+Success rate is 100 percent (20/20), round-trip min/avg/max = 24/36/68 ms
+
+
+
+
+R2# ping 13.13.5.5 source 13.13.12.2 repeat 20 size 3000
+
+Type escape sequence to abort.
+Sending 20, 3000-byte ICMP Echos to 13.13.5.5, timeout is 2 seconds:
+Packet sent with a source address of 13.13.12.2 
+....................
+Success rate is 0 percent (0/20)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
